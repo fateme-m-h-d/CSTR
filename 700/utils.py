@@ -99,7 +99,7 @@ def load_data(dataset_path):
     dataset = scaler.transform(dataset)
     
     # Save the scaler to use it later during predictions
-    base_dir = "C:/Users/Fateme/Desktop/Research/CSTR/700"   #new line of the code. need to change it.
+    base_dir = "./new1"   #new line of the code. need to change it.
     scaler_path = os.path.join(base_dir, 'scaler.pkl')
     with open(scaler_path, 'wb') as f:
         pickle.dump(scaler, f)
@@ -236,6 +236,12 @@ class ALMLoss(nn.Module):
 
 
 def get_violation(args, data, X, pred):
-    violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
+    device = X.device  # or pred.device
+    A = data['A'].to(device)
+    B = data['B'].to(device)
+    b = data['b'].to(device)
+
+    violation = torch.mm(A, X.T) + torch.mm(B, pred.T) - b.repeat(1, X.T.shape[1])
+    # violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
     return violation
     
