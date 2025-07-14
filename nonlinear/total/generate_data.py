@@ -32,7 +32,7 @@ def equations(variables, T):
     return [eq1, eq2, eq3]
 
 # Define the range of T values
-n = 500 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
+n = 250 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
 T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
 
 

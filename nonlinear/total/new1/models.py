@@ -5,7 +5,8 @@ import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 import pandas as pd
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 
 
 class NN(nn.Module):

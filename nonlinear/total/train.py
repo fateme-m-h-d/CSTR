@@ -12,7 +12,8 @@ import os
 import pandas as pd
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 torch.set_default_dtype(torch.float32)
 
 # Load the scaler used for normalization
@@ -250,7 +251,7 @@ def save_dict(dictionary, args):
 
 def load_weights(model, model_id, args):
     PATH = f'./models/{args.dataset_type}/{args.model}/{args.val_ratio}/{model_id}_{args.val_ratio}_{args.run}.pth'
-    checkpoint = torch.load(PATH)
+    checkpoint = torch.load(PATH, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
     model.to(device)

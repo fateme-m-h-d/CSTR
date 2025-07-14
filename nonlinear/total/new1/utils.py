@@ -9,7 +9,8 @@ from torch.utils import data
 from models import NN, NNOPT
 from sklearn.utils import shuffle
 
-device = "cuda" if torch.cuda.is_available() else "cpu"    #GPU OR CPU
+# device = "cuda" if torch.cuda.is_available() else "cpu"    #GPU OR CPU
+device = "cpu"
 
 def LoadData(args):
     if args.dataset_type == 'cstr':
@@ -117,7 +118,7 @@ def load_data(dataset_path):
     dataset = scaler.transform(dataset)
     
     # Save the scaler to use it later during predictions
-    base_dir = "C:/Users/Fateme/Desktop/Research/CSTR/nonlinear/total"   #new line of the code. need to change it.
+    base_dir = os.getcwd()  #new line of the code. need to change it.
     scaler_path = os.path.join(base_dir, 'scaler.pkl')
     with open(scaler_path, 'wb') as f:
         pickle.dump(scaler, f)

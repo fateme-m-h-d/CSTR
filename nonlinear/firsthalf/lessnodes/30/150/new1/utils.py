@@ -100,6 +100,7 @@ def load_data(dataset_path):
     
     # Save the scaler to use it later during predictions
     base_dir = "C:/Users/Fateme/Desktop/Research/CSTR/nonlinear/firsthalf/lessnodes/30/150"   #new line of the code. need to change it.
+    base_dir = "/home/f25moham/CSTR/nonlinear/firsthalf/lessnodes/30/150"
     scaler_path = os.path.join(base_dir, 'scaler.pkl')
     with open(scaler_path, 'wb') as f:
         pickle.dump(scaler, f)

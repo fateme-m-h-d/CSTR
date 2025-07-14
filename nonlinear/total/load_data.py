@@ -51,7 +51,7 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     elif model_type == "KKT":
         model = NNOPT(input_dim, hidden_dim, hidden_num, z0_dim, A_list, B_list, b_list)
     
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
     model.to(device)
     model.eval()

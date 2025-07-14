@@ -12,6 +12,8 @@ from scipy.optimize import fsolve  # for ground-truth solver
 
 # === Configuration ===
 base_dir = "C:/Users/Fateme/Desktop/Research/CSTR/nonlinear/firsthalf/lessnodes/30/150"
+base_dir = "/home/f25moham/CSTR/nonlinear/firsthalf/lessnodes/30/150"
+print("be more genious")
 target_folder = os.path.join(base_dir, "new1")
 os.makedirs(target_folder, exist_ok=True)
 
