@@ -44,10 +44,14 @@ R = 8.314 #J/mol
 # Cbss = 0.7666528667187799 #mol/L
 # Tss = 481.21212121212125 #K
 
-Cass=0.3797745258778441
-Cbss=0.7595490517558813
-Tss=487.7755511022044
+# 4 lines, last segement
+# Cass=0.3797745258778441
+# Cbss=0.7595490517558813
+# Tss=487.7755511022044
 
+Cass=0.37995469571009627
+Cbss=0.7599093914203539
+Tss=487.43718592964825
 Ca, Cb, T = sym.symbols('Ca Cb T')
 kf = Afo * sym.exp(-Eaf/(R*T))
 kr = Aro * sym.exp(-Ear/(R*T))
@@ -65,6 +69,36 @@ df_Cbss = df_Cb.subs([(Ca, Cass), (Cb, Cbss), (T, Tss)])
 df_Tss = df_T.subs([(Ca, Cass), (Cb, Cbss), (T, Tss)])
 f_linearized = fss + df_Cass*(Ca-Cass) + df_Cbss*(Cb-Cbss) + df_Tss*(T-Tss)
 print("Linearized MB on A is", f_linearized)
+
+Cap= 0.37995469571009627
+Cbp= 0.7599093914203539
+Tp= 487.43718592964825
+# Cap= 0.3508033455280836
+# Cbp= 0.7016066910524594
+# Tp= 551.1646586345382
+val = f_linearized.subs({
+    Ca: Cap,
+    Cb: Cbp,
+    T: Tp
+}).evalf()
+print("f_linearized =", float(val))
+
+f_lin = f_linearized
+f_num  = f_lin.subs({Cb: Cbp, T: Tp})
+solutions = sym.solve(f_num, Ca)
+Ca_pred   = solutions[0]
+print("Predicted Ca =", float(Ca_pred))
+
+error = (Ca_pred - Cap)/Cbp * 100
+print("Error in Ca prediction =", error, "%")
+
+
+val = f.subs({
+    Ca: 0.3508033455280836,
+    Cb: 0.7016066910524594,
+    T: 551.1646586345382
+}).evalf()
+print("f=", float(val))
 
 #Linearize MB on B
 # rB = 2*rA
