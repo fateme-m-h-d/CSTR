@@ -24,13 +24,13 @@ def LoadData(args):
     dataset = Data_class(dataset_arr)
     dataset.resplit_data(args.val_ratio)
 
-    A, B, b = get_scaledABb(dataset.A, dataset.B, dataset.b, scaler)
+    # A, B, b = get_scaledABb(dataset.A, dataset.B, dataset.b, scaler)
 
-    if args.dtype == 32:
-        A, B, b = A.float(), B.float(), b.float()
-    else:
-        A, B, b = A.double(), B.double(), b.double()
-    print(f'type of A: {A.dtype}, type of B: {B.dtype}, type of b: {b.dtype}')
+    # if args.dtype == 32:
+    #     A, B, b = A.float(), B.float(), b.float()
+    # else:
+    #     A, B, b = A.double(), B.double(), b.double()
+    # print(f'type of A: {A.dtype}, type of B: {B.dtype}, type of b: {b.dtype}')
 
 
     params = {'batch_size': args.batch_size,
@@ -57,10 +57,7 @@ def LoadData(args):
 
 
     data_dict = {'train_loader': train_loader, 'val_loader': val_loader, 'test_loader': test_loader,
-                 'dataset': dataset, 'A_list': A_list, 'B_list': B_list, 'b_list': b_list,
-             # still keep stacked versions for violation metrics
-             'A': torch.cat(A_list), 'B': torch.cat(B_list),
-             'b': torch.cat(b_list).unsqueeze(1)
+                 'dataset': dataset, 'A_list': A_list, 'B_list': B_list, 'b_list': b_list
                 }
     return data_dict
 
@@ -253,16 +250,12 @@ class Data_cstr(data.Dataset):
         # self.b_list = [
         #     torch.tensor([-23450.209793805465])
         # ]
-        
-        # keep convenience matrices for PINN / ALM
-        self.A = torch.cat(self.A_list, dim=0)   # (L × x_dim)
-        self.B = torch.cat(self.B_list, dim=0)   # (L × z_dim)
-        self.b = torch.cat(self.b_list, dim=0)   # (L)
 
-        
+        # self.constrained_indexes = list(set([index for index in torch.nonzero(self.B)[:, -1].tolist()]))
+        # self.unconstrained_indexes = [item for item in range(self.B.shape[1]) if item not in self.constrained_indexes]
 
-        self.constrained_indexes = list(set([index for index in torch.nonzero(self.B)[:, -1].tolist()]))
-        self.unconstrained_indexes = [item for item in range(self.B.shape[1]) if item not in self.constrained_indexes]
+        self.constrained_indexes = []
+        self.unconstrained_indexes = []
 
     def __len__(self):
         return len(self.dataset_tensor)
@@ -317,13 +310,52 @@ class ALMLoss(nn.Module):
         return mse_loss, lambda_c + mu_c
 
 
-def get_violation(args, data, X, pred):
-    if isinstance(data['A_list'], list):
-        A = torch.cat(data['A_list']);  B = torch.cat(data['B_list'])
-        b = torch.cat(data['b_list']).unsqueeze(1)
-    else:
-        A, B, b = data['A'], data['B'], data['b']
-    violation = A @ X.T + B @ pred.T - b.repeat(1, X.shape[0])
-    # violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
-    return violation
+# def get_violation(args, data, X, pred):
+
+#         A = torch.cat(data['A_list']);  B = torch.cat(data['B_list'])
+#         b = torch.cat(data['b_list']).unsqueeze(1)
     
+#     violation = A @ X.T + B @ pred.T - b.repeat(1, X.shape[0])
+#     # violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
+#     return violation
+
+
+def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875], steepness=8000):
+
+    """
+    Returns a tensor of shape (batch_size, L), where each column i is
+    the (possibly masked) violation for region i:
+       v_i = A_i @ X.T + B_i @ pred.T - b_i
+    and then multiplied by the sigmoid‐based mask for that region.
+    """
+    A_list, B_list, b_list = data['A_list'], data['B_list'], data['b_list']
+    violations = []
+
+    # helper to mirror your model’s custom_sigmoid
+    def custom_sigmoid(X, transition_points=[0.375, 0.425, 0.46875], steepness=8000):
+        w = (X - transition_points) / (100/steepness)
+        return torch.sigmoid(w)
+
+    for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
+        # raw violation: shape (1, batch)
+        v = Ai @ X.T + Bi @ pred.T - bi.view(-1,1).repeat(1, X.shape[0])
+
+        # build the same mask you use in NNOPT.forward
+        if transition_points is None:
+            mask = 1.0
+        else:
+            if i == 0:
+                mask = 1.0 - custom_sigmoid(X, transition_points[0], steepness)
+            elif i == len(A_list)-1:
+                mask = custom_sigmoid(X, transition_points[-1], steepness)
+            else:
+                mask = (custom_sigmoid(X, transition_points[i-1], steepness) *
+                        (1.0 - custom_sigmoid(X, transition_points[i], steepness)))
+
+        # mask has shape (batch,1) → transpose for v
+        v_masked = v * mask.T    # now shape (1, batch)
+        violations.append(v_masked)
+
+    # stack into (L, batch) then transpose → (batch, L)
+    violation = torch.cat(violations, dim=0).T
+    return violation

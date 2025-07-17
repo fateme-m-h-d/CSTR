@@ -51,7 +51,7 @@ def run_training(args, data):
             mse_loss = optimizer_step(model, optimizer, loss_func, X, Y, args, data)
             pred_diff = conservation_step(model, X, data, args)
             train_loss += mse_loss
-            train_violation += torch.abs(pred_diff.view(-1)).mean()
+            train_violation += torch.abs(pred_diff.reshape(-1)).mean()
 
         train_loss /= len(data['train_loader'])
         train_violation /= len(data['train_loader'])
@@ -110,7 +110,7 @@ def optimizer_step(model, optimizer, loss_func, X, Y, args, data, lambda_k=None,
 def conservation_step(model, X, data, args):
     model.eval()
     pred = model(X)
-    pred_diff = get_violation(args, data, X, pred)
+    pred_diff = get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875], steepness=8000)
     return pred_diff
 
 
@@ -124,7 +124,7 @@ def test(model, data, args):
         for batch_idx, (X, Y) in enumerate(data['val_loader']):
             X, Y = X.to(device), Y.to(device)
             pred = model(X)
-            pred_diff = get_violation(args, data, X, pred)
+            pred_diff = get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875], steepness=8000)
             if args.loss_type == 'PINN':
                 mse_loss, pinn_loss = loss_func(X, pred, Y)
                 loss = mse_loss + pinn_loss
@@ -132,7 +132,7 @@ def test(model, data, args):
             elif args.loss_type == 'MSE':
                 loss = loss_func(pred, Y)
                 test_loss += loss.item()
-            test_violation += torch.abs(pred_diff.view(-1)).mean()
+            test_violation += torch.abs(pred_diff.reshape(-1)).mean()
     test_loss /= len(data['val_loader'])  # Test set Average loss
     test_violation /= len(data['val_loader'])  # Test set Average violation
     return test_loss, test_violation
@@ -171,11 +171,11 @@ def evaluate_model(data, args):
             for batch_idx, (X, Y) in enumerate(data['test_loader']):
                 X, Y = X.to(device), Y.to(device)
                 pred = model(X)
-                pred_diff = get_violation(args, data, X, pred)
+                pred_diff = get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875], steepness=8000)
                 loss = loss_func(pred, Y)
 
                 rmse_total += loss.item()
-                violation += torch.abs(pred_diff.view(-1)).mean()
+                violation += torch.abs(pred_diff.reshape(-1)).mean()
 
             rmse_total /= len(data['test_loader'])
             rmse_total = np.sqrt(rmse_total)
