@@ -50,7 +50,7 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     elif model_type == "KKT":
         model = NNOPT(input_dim, hidden_dim, hidden_num, z0_dim, A, B, b)
     
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
     model.to(device)
     model.eval()
@@ -66,7 +66,7 @@ def make_prediction(model, scaler, temperature):
 
     # Create a dummy array with 4 features (input + outputs)
     num_samples = temperature.shape[0]
-    dummy_full_data = np.zeros((num_samples, 4))
+    dummy_full_data = np.zeros((num_samples, 6))
     dummy_full_data[:, 0] = temperature[:, 0]  # Set the temperature value as the first feature
 
     # Transform the entire dummy dataset with the scaler
@@ -76,7 +76,7 @@ def make_prediction(model, scaler, temperature):
     temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
 
     # Convert to tensor and make prediction
-    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float32).to(device)
+    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
 
     # Make prediction
     with torch.no_grad():
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     input_dim = 1
     hidden_dim = 32
     hidden_num = 2
-    z0_dim = 3
+    z0_dim = 5
     # A = torch.tensor([[d]])
     # B = torch.tensor([[a,c,0]])
     # b = torch.tensor([-e])
@@ -129,9 +129,14 @@ if __name__ == "__main__":
     
     A = torch.tensor([[0]
                                 ])  #changed
-    B = torch.tensor([[1, 10, -10]
+    B = torch.tensor([[1, 0, 0, -10, +10]
                                 ])  #changed
     b = torch.tensor([1])    #changed
+    
+    A = A.double()
+    B = B.double()
+    b = b.double()
+
     
     
     def get_ScaleAndMean(scaler, x_dim, z_dim):
@@ -165,20 +170,24 @@ if __name__ == "__main__":
     model_type = "KKT" #change this to produce NN or KKT results
     if model_type == "NN":
         model = load_saved_model(NNmodel_path, "NN", input_dim, hidden_dim, hidden_num, z0_dim)
+        model = model.double()
+        model.to(device)
         print(f"Model loaded successfully from {NNmodel_path}")
     elif model_type =="KKT":
         A, B, b = get_scaledABb(A, B, b, scaler)
-        A = A.float()  # Ensure A is float32
-        B = B.float()  # Ensure B is float32
-        b = b.float()  # Ensure b is float32
+        A = A.double()  
+        B = B.double()  
+        b = b.double()  
 
         model = load_saved_model(KKTmodel_path,"KKT",input_dim,hidden_dim,hidden_num,z0_dim,A,B,b)
+        model = model.double()
+        model.to(device)
     elif FileNotFoundError:
         print(f"Model file not found at {NNmodel_path}. Make sure the model is trained and the file path is correct.")
         exit(1)
 
     # Make predictions for new temperatures
-    new_temperatures = np.linspace(280, 600, 500) #think about it
+    new_temperatures = np.linspace(280, 600, 200) #think about it
     #new_temperatures=np.array([450, 451])
     predictions = make_prediction(model, scaler, new_temperatures)
     print("Scaler Type:", type(scaler))
