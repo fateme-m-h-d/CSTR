@@ -119,75 +119,36 @@ if __name__ == "__main__":
     # B = torch.tensor([[1,1,1]])
     # b = torch.tensor([3])
     
+    
     A_list = [
-            torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]), torch.tensor([[- 25.5032870206085]])
+            torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0589977043951539]]), torch.tensor([[- 0.175928980736293]]), torch.tensor([[- 5.68379236916079]]), torch.tensor([[- 198.802430563989]])
             # … add more rows if want more lines
         ]
     B_list = [
             torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
             torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
-            torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
-            torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+            torch.tensor([[-6.41562952963354, - 5.41562952963354, 0]]),
+            torch.tensor([[-47.4935472673711, - 46.4935472673712, 0]]),
+            torch.tensor([[-2909.08659408943, - 2908.08659408949, 0]]),
+            torch.tensor([[-168482.732203137, - 168481.732203863, 0]]) 
             
         ]
     b_list = [
-            torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-30645.4682099649])
-        ]
-    
+            torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-29.674961918774]), torch.tensor([-131.782655072763]), torch.tensor([-6065.64229189764]), torch.tensor([-286884.958823058])]
     # A_list = [
-    #         torch.tensor([[- 0.00301071551554214]]),torch.tensor([[-0.02879478968746971]]), torch.tensor([[-19.91427610060009]])
+    #         torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]), torch.tensor([[- 25.5032870206085]])
     #         # … add more rows if want more lines
     #     ]
     # B_list = [
     #         torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
-    #         torch.tensor([[ -1.549379806828716, -0.5493798071408083, 0]]),
-    #         torch.tensor([[-12059.334807989864, -12058.334807988307, 0]]) 
+    #         torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
+    #         torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
+    #         torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
             
     #     ]
     # b_list = [
-    #         torch.tensor([-1.93327845562254]),torch.tensor([-11.172181579708148]), torch.tensor([-23450.209793805465])
+    #         torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-30645.4682099649])
     #     ]
-    
-    # A_list = [
-    #         torch.tensor([[-19.91427610060009]]), torch.tensor([[-0.02879478968746971]])
-    #         # … add more rows if want more lines
-    #     ]
-    # B_list = [
-    #         torch.tensor([[-12059.334807989864, -12058.334807988307, 0]]), 
-    #         torch.tensor([[ -1.549379806828716, -0.5493798071408083, 0]])
-            
-    #     ]
-    # b_list = [
-    #         torch.tensor([-23450.209793805465]),
-    #         torch.tensor([-11.172181579708148])
-    #     ]
-    
-    # first half linearization
-    # A_list = [
-    #         torch.tensor([[-0.02879478968746971]])
-    #         # … add more rows if want more lines
-    #     ]
-    # B_list = [
-    #         torch.tensor([[ -1.549379806828716, -0.5493798071408083, 0]])
-            
-    #     ]
-    # b_list = [
-    #         torch.tensor([-11.172181579708148])
-    #     ]
-        
-    # second half linearization
-    # A_list = [
-    #         torch.tensor([[-19.91427610060009]])
-    #         # … add more rows if want more lines
-    #     ]
-    # B_list = [
-    #         torch.tensor([[-12059.334807989864, -12058.334807988307, 0]])
-            
-    #     ]
-    # b_list = [
-    #         torch.tensor([-23450.209793805465])
-    #     ]
-    
     
     A_list, B_list, b_list = get_scaledABb_list(A_list, B_list, b_list, scaler)
     
@@ -240,7 +201,7 @@ if __name__ == "__main__":
         exit(1)
 
     # Make predictions for new temperatures
-    new_temperatures = np.linspace(280, 600, 350) #think about it
+    new_temperatures = np.linspace(280, 600, 500) #think about it
     #new_temperatures=np.array([450, 451])
     predictions = make_prediction(model, scaler, new_temperatures)
     print("Scaler Type:", type(scaler))
@@ -264,7 +225,7 @@ if __name__ == "__main__":
     plt.plot(new_temperatures, Cc_values1, color='g', label="Predicted Cc")
     
     # Define the range of T values
-    n = 350 #number of points
+    n = 500 #number of points
     T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed
 
 
@@ -293,7 +254,7 @@ if __name__ == "__main__":
     plt.xlabel('Temperature (K)')
     plt.ylabel('Concentration (mol/L)')
     plt.title('Predictions Over Original Data')
-    plt.legend()
+    # plt.legend()
     plt.grid()
     plt.show()
     

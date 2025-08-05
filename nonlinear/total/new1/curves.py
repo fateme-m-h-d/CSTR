@@ -1,4 +1,6 @@
 import numpy as np
+# import matplotlib
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 loss_KKThPINN = np.load('./data/learning_curves/cstr/KKThPINN/0.2/MODELID_train_losses_run0.npy') 
@@ -61,4 +63,5 @@ plt.xlabel('Epochs')
 plt.ylabel('violation')
 plt.yscale('log')
 plt.legend()
+# plt.savefig('violation_over_epochs.png', dpi=300)
 plt.show()

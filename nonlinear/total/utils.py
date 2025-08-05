@@ -210,19 +210,37 @@ class Data_cstr(data.Dataset):
         
         # 3 lines
         self.A_list = [
-            torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]), torch.tensor([[- 25.5032870206085]])
+            torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0589977043951539]]), torch.tensor([[- 0.175928980736293]]), torch.tensor([[- 5.68379236916079]]), torch.tensor([[- 198.802430563989]])
             # … add more rows if want more lines
         ]
         self.B_list = [
             torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
             torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
-            torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
-            torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+            torch.tensor([[-6.41562952963354, - 5.41562952963354, 0]]),
+            torch.tensor([[-47.4935472673711, - 46.4935472673712, 0]]),
+            torch.tensor([[-2909.08659408943, - 2908.08659408949, 0]]),
+            torch.tensor([[-168482.732203137, - 168481.732203863, 0]]) 
             
         ]
         self.b_list = [
-            torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-30645.4682099649])
+            torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-29.674961918774]), torch.tensor([-131.782655072763]), torch.tensor([-6065.64229189764]), torch.tensor([-286884.958823058])
         ]
+        
+        # self.A_list = [
+        #     torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]),  torch.tensor([[- 0.425190394430034]]),torch.tensor([[- 25.5032870206085]])
+        #     # … add more rows if want more lines
+        # ]
+        # self.B_list = [
+        #     torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
+        #     torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
+        #     torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
+        #     torch.tensor([[-147.284857782338, - 146.284857782338, 0]]),
+        #     torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+            
+        # ]
+        # self.b_list = [
+        #     torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-363.930587960532]), torch.tensor([-30645.4682099649])
+        # ]
         
         # first half linearization
         # self.A_list = [
@@ -320,7 +338,7 @@ class ALMLoss(nn.Module):
 #     return violation
 
 
-def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875], steepness=8000):
+def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
 
     """
     Returns a tensor of shape (batch_size, L), where each column i is
@@ -332,9 +350,18 @@ def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875]
     violations = []
 
     # helper to mirror your model’s custom_sigmoid
-    def custom_sigmoid(X, transition_points=[0.375, 0.425, 0.46875], steepness=8000):
+    def custom_sigmoid(X, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
         w = (X - transition_points) / (100/steepness)
         return torch.sigmoid(w)
+    
+    region = 1  # or 3
+    Ai = A_list[region]
+    Bi = B_list[region]
+    bi = b_list[region]
+
+    segment_violation = Ai @ X.T + Bi @ pred.T - bi.view(-1,1).repeat(1, X.shape[0])
+    # print(f"Segment {region} raw violation range:", segment_violation.min().item(), segment_violation.max().item())
+
 
     for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
         # raw violation: shape (1, batch)
@@ -351,9 +378,17 @@ def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.46875]
             else:
                 mask = (custom_sigmoid(X, transition_points[i-1], steepness) *
                         (1.0 - custom_sigmoid(X, transition_points[i], steepness)))
+                
 
+        # print(f"Mask range [{i}]:", mask.min().item(), mask.max().item())
         # mask has shape (batch,1) → transpose for v
         v_masked = v * mask.T    # now shape (1, batch)
+        # activated_v = v_masked[mask.T > 0.9]  # print only significantly activated regions
+        # if activated_v.numel() > 0:
+        #     print(f"Masked Violation range (active) [{i}]:", activated_v.min().item(), activated_v.max().item())
+        # else:
+        #     print(f"No activated points for region [{i}]")
+        # print(f"violation range [{i}]:", v_masked.min().item(), v_masked.max().item())
         violations.append(v_masked)
 
     # stack into (L, batch) then transpose → (batch, L)
