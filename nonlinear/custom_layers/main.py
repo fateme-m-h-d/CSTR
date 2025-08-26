@@ -16,6 +16,9 @@ def add_arguments():
     parser.add_argument('--hidden_num', type=int, default=2)
     parser.add_argument('--z0_dim', type=int, default=5,
                         help='3 for cstr')
+    # add_arguments()
+    parser.add_argument('--z0_inner_dim', type=int, default=3,
+                    help='inner NN output dim (e.g., 3 for Ca,Cb,Cc)')
 
     parser.add_argument('--optimizer', type=str, default='adam')
     parser.add_argument('--epochs', type=int, default=1000)

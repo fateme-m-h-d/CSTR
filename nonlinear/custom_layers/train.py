@@ -10,11 +10,55 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 import pandas as pd
+from models import Afo, Eaf, Aro, Ear, R, Cao, Cbo, Cco
+
+def _augment_with_fg_from_nn(X, pred3, data, args):
+    """
+    X:  [N, input_dim]   (T is the first feature, scaled)
+    pred3: [N, 3]        (Ca, Cb, Cc) from plain NN
+    returns: [N, 5]      (Ca, Cb, Cc, f, g)
+    """
+    # Prefer data['scaler']; fall back to the global 'scaler' loaded in train.py
+    sc = data.get('scaler', globals().get('scaler'))
+
+    # Unscale temperature (MaxAbsScaler)
+    T = X[:, 0:1] * torch.as_tensor(sc.scale_[0], device=pred3.device, dtype=pred3.dtype)
+
+    # Split Ca, Cb, Cc
+    Ca = pred3[:, 0:1]
+    Cb = pred3[:, 1:2]
+    Cc = pred3[:, 2:3]
+
+    # Cast constants to the right device/dtype
+    Afo_t = torch.as_tensor(Afo, device=pred3.device, dtype=pred3.dtype)
+    Eaf_t = torch.as_tensor(Eaf, device=pred3.device, dtype=pred3.dtype)
+    Aro_t = torch.as_tensor(Aro, device=pred3.device, dtype=pred3.dtype)
+    Ear_t = torch.as_tensor(Ear, device=pred3.device, dtype=pred3.dtype)
+    R_t   = torch.as_tensor(R,   device=pred3.device, dtype=pred3.dtype)
+    Cao_t = torch.as_tensor(Cao, device=pred3.device, dtype=pred3.dtype)
+    Cbo_t = torch.as_tensor(Cbo, device=pred3.device, dtype=pred3.dtype)
+    Cco_t = torch.as_tensor(Cco, device=pred3.device, dtype=pred3.dtype)
+
+    # Kinetics
+    kf = Afo_t * torch.exp(-Eaf_t / (R_t * T))
+    kr = Aro_t * torch.exp(-Ear_t / (R_t * T))
+
+    # Use the same scaling indices you use elsewhere (4->f, 5->g)
+    scale_f = torch.as_tensor(sc.scale_[4], device=pred3.device, dtype=pred3.dtype)
+    scale_g = torch.as_tensor(sc.scale_[5], device=pred3.device, dtype=pred3.dtype)
+
+    # Build g and f
+    g = (kf / scale_g) * Ca * (Cb ** 2)
+    f = (kr / scale_f) * (Cao_t - Ca + Cbo_t - Cb + Cco_t)
+
+    return torch.cat([Ca, Cb, Cc, f, g], dim=1)
+
 
 
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 device = "cpu"
 torch.set_default_dtype(torch.float64)
+
 
 # Load the scaler used for normalization
 scaler_path = "./scaler.pkl"  # Adjust this path if needed
@@ -89,7 +133,11 @@ def optimizer_step(model, optimizer, loss_func, X, Y, args, data, lambda_k=None,
         model.train()
         optimizer.zero_grad()
         pred = model(X)
-        loss = loss_func(pred, Y)
+        
+        # NEW: train NN on only the first z0_inner_dim targets (e.g., Ca,Cb,Cc)
+        Y_eff = Y[:, :args.z0_inner_dim] if args.model == 'NN' else Y
+    
+        loss = loss_func(pred, Y_eff)
         loss.backward()
         optimizer.step()
         return loss.item()
@@ -110,6 +158,8 @@ def optimizer_step(model, optimizer, loss_func, X, Y, args, data, lambda_k=None,
 def conservation_step(model, X, data, args):
     model.eval()
     pred = model(X)
+    if args.model == 'NN':
+        pred = _augment_with_fg_from_nn(X, pred, data, args)
     pred_diff = get_violation(args, data, X, pred)
     return pred_diff
 
@@ -124,13 +174,18 @@ def test(model, data, args):
         for batch_idx, (X, Y) in enumerate(data['val_loader']):
             X, Y = X.to(device), Y.to(device)
             pred = model(X)
-            pred_diff = get_violation(args, data, X, pred)
+            if args.model == 'NN':
+                pred_for_violation = _augment_with_fg_from_nn(X, pred, data, args)  # [N,5]
+            else:
+                pred_for_violation = pred
+            pred_diff = get_violation(args, data, X, pred_for_violation)
             if args.loss_type == 'PINN':
                 mse_loss, pinn_loss = loss_func(X, pred, Y)
                 loss = mse_loss + pinn_loss
                 test_loss += mse_loss.item()
             elif args.loss_type == 'MSE':
-                loss = loss_func(pred, Y)
+                Y_eff = Y[:, :args.z0_inner_dim] if args.model == 'NN' else Y
+                loss = loss_func(pred, Y_eff)
                 test_loss += loss.item()
             test_violation += torch.abs(pred_diff.view(-1)).mean()
     test_loss /= len(data['val_loader'])  # Test set Average loss
@@ -171,8 +226,13 @@ def evaluate_model(data, args):
             for batch_idx, (X, Y) in enumerate(data['test_loader']):
                 X, Y = X.to(device), Y.to(device)
                 pred = model(X)
-                pred_diff = get_violation(args, data, X, pred)
-                loss = loss_func(pred, Y)
+                if args.model == 'NN':
+                    pred_for_violation = _augment_with_fg_from_nn(X, pred, data, args)  # [N,5]
+                else:
+                    pred_for_violation = pred
+                pred_diff = get_violation(args, data, X, pred_for_violation)
+                Y_eff = Y[:, :args.z0_inner_dim] if args.model == 'NN' else Y
+                loss = loss_func(pred, Y_eff)
 
                 rmse_total += loss.item()
                 violation += torch.abs(pred_diff.view(-1)).mean()
@@ -189,34 +249,35 @@ def evaluate_model(data, args):
         scores = {'rmse_total': rmse_total,
                     'violation': violation}
 
-        if args.model == 'NN':
-            post_rmse_total = 0
-            post_rmse_unconstrained = 0
-            post_rmse_constrained = 0
+        # if args.model == 'NN':
+        #     post_rmse_total = 0
+        #     post_rmse_unconstrained = 0
+        #     post_rmse_constrained = 0
 
-            chunk = torch.mm(data['B'].t(),
-                            torch.inverse(
-                                torch.mm(data['B'], data['B'].t())
-                            )
-                            )
-            Astar = - torch.mm(chunk, data['A'])
-            Bstar = torch.eye(args.z0_dim).to(device) - torch.mm(chunk, data['B'])
-            bstar = torch.matmul(chunk, data['b']).squeeze(-1)
+        #     chunk = torch.mm(data['B'].t(),
+        #                     torch.inverse(
+        #                         torch.mm(data['B'], data['B'].t())
+        #                     )
+        #                     )
+        #     Astar = - torch.mm(chunk, data['A'])
+        #     Bstar = torch.eye(args.z0_dim).to(device) - torch.mm(chunk, data['B'])
+        #     bstar = torch.matmul(chunk, data['b']).squeeze(-1)
 
-            with torch.no_grad():
-                for batch_idx, (X, Y) in enumerate(data['test_loader']):
-                    X, Y = X.to(device), Y.to(device)
-                    pred = model(X)
-                    e = torch.ones((X.shape[0], 1)).to(device)
-                    pred = torch.mm(X, Astar.T) + torch.mm(pred, Bstar.T) + torch.mm(e, bstar.unsqueeze(1).T)
-                    loss = loss_func(pred, Y)
+        #     with torch.no_grad():
+        #         for batch_idx, (X, Y) in enumerate(data['test_loader']):
+        #             X, Y = X.to(device), Y.to(device)
+        #             pred = model(X)
+        #             e = torch.ones((X.shape[0], 1)).to(device)
+        #             pred = torch.mm(X, Astar.T) + torch.mm(pred, Bstar.T) + torch.mm(e, bstar.unsqueeze(1).T)
+        #             Y_eff = Y[:, :args.z0_inner_dim] if args.model == 'NN' else Y
+        #             loss = loss_func(pred, Y_eff)
                     
-                    post_rmse_total += loss.item()
+        #             post_rmse_total += loss.item()
 
-                post_rmse_total /= len(data['test_loader'])
-                post_rmse_total = np.sqrt(post_rmse_total)
-                post_rmse_total = float(post_rmse_total)  # again if it’s np.float64
-                scores.update({'post_rmse_total': post_rmse_total})
+        #         post_rmse_total /= len(data['test_loader'])
+        #         post_rmse_total = np.sqrt(post_rmse_total)
+        #         post_rmse_total = float(post_rmse_total)  # again if it’s np.float64
+        #         scores.update({'post_rmse_total': post_rmse_total})
 
         print(scores)
         create_report(scores, args)

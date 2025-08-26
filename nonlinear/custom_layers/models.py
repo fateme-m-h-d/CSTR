@@ -25,13 +25,13 @@ device = "cpu"
 
 
 class NN(nn.Module):
-    def __init__(self, input_dim, hidden_dim, hidden_num, z0_dim):
+    def __init__(self, input_dim, hidden_dim, hidden_num, z0_inner_dim):
         super(NN, self).__init__()
         self.layers = nn.ModuleList()
         self.layers.append(nn.Linear(input_dim, hidden_dim))    #first layer (maps the input to the hidden layer)
         for _ in range(hidden_num - 1):                         #a loop adds hidden layers (with 2 hidden_num we just have 1 hidden layer here! the article cliams 2 hidden layers)
             self.layers.append(nn.Linear(hidden_dim, hidden_dim))
-        self.layers.append(nn.Linear(hidden_dim, z0_dim))       #final layer (maps the last hidden layer to the output layer)
+        self.layers.append(nn.Linear(hidden_dim, z0_inner_dim))       #final layer (maps the last hidden layer to the output layer)
 
     def forward(self, x):                                       # x: input data
         for layer in self.layers[:-1]:                          # excludes the last layer because the activation is not applied to the output layer (The -1 index in Python is shorthand to access the last item of a list, so self.layers[-1] refers to the final layer that maps the last hidden layer to the output layer)
@@ -46,7 +46,7 @@ class NN(nn.Module):
 
 
 class NNOPT(nn.Module):
-    def __init__(self, input_dim, hidden_dim, hidden_num, z0_dim, A, B, b):
+    def __init__(self, input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b):
         super(NNOPT, self).__init__()
         self.A = A                                           # orthogonal projection (satisfying hard linear constriants)
         self.B = B
@@ -64,7 +64,7 @@ class NNOPT(nn.Module):
         self.layers.append(nn.Linear(input_dim, hidden_dim)) # a linear layer
         for _ in range(hidden_num - 1):                      # (_) indicate that the variable's value is not important and will not be used in the loop body.
             self.layers.append(nn.Linear(hidden_dim, hidden_dim))
-        self.layers.append(nn.Linear(hidden_dim, z0_dim))
+        self.layers.append(nn.Linear(hidden_dim, z0_inner_dim))
 
         self.fc_fixed1 = nn.Linear(z0_dim, z0_dim, bias=False)  ########    #fixed layers fc_fixed1 (a linear transformation with no bias and fixed weights) and fc_fixed2. 
         self.fc_fixed1.weight = nn.Parameter(self.Bstar, requires_grad=False)  # fixed weight (not learnable- will not be updated during training), Bstar
