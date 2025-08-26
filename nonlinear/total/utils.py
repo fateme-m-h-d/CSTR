@@ -54,6 +54,11 @@ def LoadData(args):
         A_list = [A_i.double() for A_i in A_list]
         B_list = [B_i.double() for B_i in B_list]
         b_list = [b_i.double() for b_i in b_list]
+    # Debug check
+    print("Dtypes after casting:")
+    print([A_i.dtype for A_i in A_list])
+    print([B_i.dtype for B_i in B_list])
+    print([b_i.dtype for b_i in b_list])
 
 
     data_dict = {'train_loader': train_loader, 'val_loader': val_loader, 'test_loader': test_loader,
@@ -199,18 +204,15 @@ class Data_cstr(data.Dataset):
         self.X = self.dataset_tensor[:, :1]
         self.Y = self.dataset_tensor[:, 1:]
         self.train_set, self.val_set, self.test_set = self.split_data(0.2)  # initial val_ratio -> 0.2
+
         
-        
-        # self.A = torch.tensor([[-19.91427610060009]
-        #                         ])  #changed
-        # self.B = torch.tensor([[ -12059.334807989864, -12058.334807988307, 0]
-        #                         ])  #changed
-        # self.b = torch.tensor([-23450.209793805465])    #changed
-        
-        
-        # 3 lines
         self.A_list = [
-            torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0589977043951539]]), torch.tensor([[- 0.175928980736293]]), torch.tensor([[- 5.68379236916079]]), torch.tensor([[- 198.802430563989]])
+            torch.tensor([[- 0.00301071551554214]]),
+            torch.tensor([[- 0.0287912896000818]]),
+            torch.tensor([[- 0.0589977043951539]]),
+            torch.tensor([[- 0.175928980736293]]),
+            torch.tensor([[- 5.68379236916079]]),
+            torch.tensor([[- 198.802430563989]])
             # … add more rows if want more lines
         ]
         self.B_list = [
@@ -223,52 +225,58 @@ class Data_cstr(data.Dataset):
             
         ]
         self.b_list = [
-            torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-29.674961918774]), torch.tensor([-131.782655072763]), torch.tensor([-6065.64229189764]), torch.tensor([-286884.958823058])
+            torch.tensor([-1.93327845562254]),
+            torch.tensor([-11.1707510081181]),
+            torch.tensor([-29.674961918774]),
+            torch.tensor([-131.782655072763]),
+            torch.tensor([-6065.64229189764]),
+            torch.tensor([-286884.958823058])
         ]
         
         # self.A_list = [
-        #     torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]),  torch.tensor([[- 0.425190394430034]]),torch.tensor([[- 25.5032870206085]])
-        #     # … add more rows if want more lines
+        #     torch.tensor([[- 0.00301071551554214]]),
+        #     torch.tensor([[- 0.0287912896000818]]),
+        #     torch.tensor([[- 0.0589977043951539]]),
+        #     torch.tensor([[- 0.175928980736293]]),
+        #     torch.tensor([[- 2.22034336021516]]),
+        #     torch.tensor([[- 19.068831993137]]),
+        #     torch.tensor([[- 67.0529314068883]]),
+        #     torch.tensor([[- 147.195966751539]]),
+        #     torch.tensor([[- 242.760891902504]]),
+        #     torch.tensor([[- 356.302755070124]]),
+        #     torch.tensor([[- 496.399591699859]]),
+        #     torch.tensor([[- 650.139480396354]])
+            
         # ]
         # self.B_list = [
         #     torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
         #     torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
-        #     torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
-        #     torch.tensor([[-147.284857782338, - 146.284857782338, 0]]),
-        #     torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+        #     torch.tensor([[-6.41562952963354, - 5.41562952963354, 0]]),
+        #     torch.tensor([[-47.4935472673711, - 46.4935472673712, 0]]),
+        #     torch.tensor([[-1002.53593524019, - 1001.53593524029, 0]]),
+        #     torch.tensor([[-11478.9269831455, - 11477.9269831524, 0]]),
+        #     torch.tensor([[-48213.8668993521, - 48212.866899362, 0]]),
+        #     torch.tensor([[ -119069.962944269, - 119068.962945171, 0]]),
+        #     torch.tensor([[-212313.514625447, - 212312.514623723, 0]]),
+        #     torch.tensor([[-331422.775549942, - 331421.775550256, 0]]),
+        #     torch.tensor([[-487637.901829002, - 487636.901838071, 0]]),
+        #     torch.tensor([[-668298.267688647, - 668297.267673516, 0]])
             
         # ]
         # self.b_list = [
-        #     torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-363.930587960532]), torch.tensor([-30645.4682099649])
+        #     torch.tensor([-1.93327845562254]),
+        #     torch.tensor([-11.1707510081181]),
+        #     torch.tensor([-29.674961918774]),
+        #     torch.tensor([-131.782655072763]),
+        #     torch.tensor([-2204.88922143194]),
+        #     torch.tensor([-22375.8507664129]),
+        #     torch.tensor([-87505.3569136546]),
+        #     torch.tensor([-206400.451290504]),
+        #     torch.tensor([-357218.284591596]),
+        #     torch.tensor([-544832.512463095]),
+        #     torch.tensor([-785540.247635705]),
+        #     torch.tensor([-1058769.64213322])
         # ]
-        
-        # first half linearization
-        # self.A_list = [
-        #     torch.tensor([[-0.02879478968746971]])
-        #     # … add more rows if want more lines
-        # ]
-        # self.B_list = [
-        #     torch.tensor([[ -1.549379806828716, -0.5493798071408083, 0]])
-            
-        # ]
-        # self.b_list = [
-        #     torch.tensor([-11.172181579708148])
-        # ]
-        
-        # second half linearization
-        # self.A_list = [
-        #     torch.tensor([[-19.91427610060009]])
-        #     # … add more rows if want more lines
-        # ]
-        # self.B_list = [
-            
-        #     torch.tensor([[-12059.334807989864, -12058.334807988307, 0]]) 
-            
-        # ]
-        # self.b_list = [
-        #     torch.tensor([-23450.209793805465])
-        # ]
-
         # self.constrained_indexes = list(set([index for index in torch.nonzero(self.B)[:, -1].tolist()]))
         # self.unconstrained_indexes = [item for item in range(self.B.shape[1]) if item not in self.constrained_indexes]
 
@@ -326,19 +334,8 @@ class ALMLoss(nn.Module):
         lambda_c = torch.mm(lambda_k.unsqueeze(0), c).mean()
         mu_c = mu_k / 2 * c.pow(2).mean()
         return mse_loss, lambda_c + mu_c
-
-
-# def get_violation(args, data, X, pred):
-
-#         A = torch.cat(data['A_list']);  B = torch.cat(data['B_list'])
-#         b = torch.cat(data['b_list']).unsqueeze(1)
-    
-#     violation = A @ X.T + B @ pred.T - b.repeat(1, X.shape[0])
-#     # violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
-#     return violation
-
-
-def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
+# RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,460/800),(460/800,500/800),(500/800,530/800),(530/800,550/800),(550/800,565/800),(565/800,578/800),(578/800,590/800),(590/800,600/800)]
+def get_violation(args, data, X, pred, RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,500/800), (500/800,600/800)]):
 
     """
     Returns a tensor of shape (batch_size, L), where each column i is
@@ -347,50 +344,59 @@ def get_violation(args, data, X, pred, transition_points=[0.375, 0.425, 0.45, 0.
     and then multiplied by the sigmoid‐based mask for that region.
     """
     A_list, B_list, b_list = data['A_list'], data['B_list'], data['b_list']
-    violations = []
+    
+     # Ensure we’re working on the same device/dtype as inputs
+    # tps = torch.tensor(transition_points, dtype=X.dtype, device=X.device)
+
+    # Build hard region masks in scaled-X space
+    x1d = X[:, 0]  # (batch,)
+    masks = []
+    # for i in range(L):
+    #     if i == 0:
+    #         m = (x1d < tps[0])
+    #     elif i == L - 1:
+    #         m = (x1d >= tps[-1])
+    #     else:
+    #         m = (x1d >= tps[i-1]) & (x1d < tps[i])
+    #     masks.append(m)
 
     # helper to mirror your model’s custom_sigmoid
-    def custom_sigmoid(X, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
-        w = (X - transition_points) / (100/steepness)
-        return torch.sigmoid(w)
+    # def custom_sigmoid(X, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
+    #     w = (X - transition_points) / (100/steepness)
+    #     return torch.sigmoid(w)
+    violations = []
+    N = len(x1d)
     
-    region = 1  # or 3
-    Ai = A_list[region]
-    Bi = B_list[region]
-    bi = b_list[region]
-
-    segment_violation = Ai @ X.T + Bi @ pred.T - bi.view(-1,1).repeat(1, X.shape[0])
-    # print(f"Segment {region} raw violation range:", segment_violation.min().item(), segment_violation.max().item())
-
-
-    for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
+    for i, ((lo, hi), Ai, Bi, bi) in enumerate(zip(RANGES, A_list, B_list, b_list)):
+        
+        Ai = Ai.to(dtype=X.dtype, device=X.device)
+        Bi = Bi.to(dtype=X.dtype, device=X.device)
+        bi = bi.to(dtype=X.dtype, device=X.device)
+        
+        mask = (x1d >= lo) & (x1d < hi if i < len(RANGES)-1 else x1d <= hi)
         # raw violation: shape (1, batch)
-        v = Ai @ X.T + Bi @ pred.T - bi.view(-1,1).repeat(1, X.shape[0])
-
+        v = (X @ Ai.T + pred @ Bi.T - bi).flatten()
+        v_s = torch.full((N,), float('nan'), dtype=X.dtype, device=X.device)
+        v_s[mask] = v[mask]
+        violations.append(v_s)
+        # Fill with NaN outside the region, keep values inside
+        # v_out[m] = v[m]
         # build the same mask you use in NNOPT.forward
-        if transition_points is None:
-            mask = 1.0
-        else:
-            if i == 0:
-                mask = 1.0 - custom_sigmoid(X, transition_points[0], steepness)
-            elif i == len(A_list)-1:
-                mask = custom_sigmoid(X, transition_points[-1], steepness)
-            else:
-                mask = (custom_sigmoid(X, transition_points[i-1], steepness) *
-                        (1.0 - custom_sigmoid(X, transition_points[i], steepness)))
-                
-
-        # print(f"Mask range [{i}]:", mask.min().item(), mask.max().item())
-        # mask has shape (batch,1) → transpose for v
-        v_masked = v * mask.T    # now shape (1, batch)
-        # activated_v = v_masked[mask.T > 0.9]  # print only significantly activated regions
-        # if activated_v.numel() > 0:
-        #     print(f"Masked Violation range (active) [{i}]:", activated_v.min().item(), activated_v.max().item())
+        # if transition_points is None:
+        #     mask = 1.0
         # else:
-        #     print(f"No activated points for region [{i}]")
-        # print(f"violation range [{i}]:", v_masked.min().item(), v_masked.max().item())
-        violations.append(v_masked)
-
+        #     if i == 0:
+        #         mask = 1.0 - custom_sigmoid(X, transition_points[0], steepness)
+        #     elif i == len(A_list)-1:
+        #         mask = custom_sigmoid(X, transition_points[-1], steepness)
+        #     else:
+        #         mask = (custom_sigmoid(X, transition_points[i-1], steepness) *
+        #                 (1.0 - custom_sigmoid(X, transition_points[i], steepness)))
+        # v_masked = v * mask.T    # now shape (1, batch)
+        
+        # violations.append(v_masked)
+        # violations.append(v_out)  # shape (batch, 1)
     # stack into (L, batch) then transpose → (batch, L)
-    violation = torch.cat(violations, dim=0).T
+    violation = torch.stack(violations, dim=1)
     return violation
+

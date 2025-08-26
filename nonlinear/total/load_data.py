@@ -53,7 +53,7 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
-    model.to(device)
+    model.double().to(device)
     model.eval()
     return model
 
@@ -77,7 +77,7 @@ def make_prediction(model, scaler, temperature):
     temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
 
     # Convert to tensor and make prediction
-    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float32).to(device)
+    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
 
     # Make prediction
     with torch.no_grad():
@@ -135,27 +135,32 @@ if __name__ == "__main__":
         ]
     b_list = [
             torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-29.674961918774]), torch.tensor([-131.782655072763]), torch.tensor([-6065.64229189764]), torch.tensor([-286884.958823058])]
+    
     # A_list = [
-    #         torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]), torch.tensor([[- 25.5032870206085]])
-    #         # … add more rows if want more lines
-    #     ]
+    #         torch.tensor([[- 198.802430563989]], dtype=torch.float64),torch.tensor([[- 198.802430563989]], dtype=torch.float64) ,torch.tensor([[- 198.802430563989]], dtype=torch.float64), torch.tensor([[- 198.802430563989]], dtype=torch.float64), torch.tensor([[- 198.802430563989]], dtype=torch.float64), torch.tensor([[- 198.802430563989]], dtype=torch.float64)
+    # ]
     # B_list = [
-    #         torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
-    #         torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
-    #         torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
-    #         torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+    #         torch.tensor([[ -168482.732203137, - 168481.732203863, 0]], dtype=torch.float64),
+    #         torch.tensor([[ -168482.732203137, - 168481.732203863, 0]], dtype=torch.float64),
+    #         torch.tensor([[-168482.732203137, - 168481.732203863, 0]], dtype=torch.float64),
+    #         torch.tensor([[-168482.732203137, - 168481.732203863, 0]], dtype=torch.float64),
+    #         torch.tensor([[-168482.732203137, - 168481.732203863, 0]], dtype=torch.float64),
+    #         torch.tensor([[-168482.732203137, - 168481.732203863, 0]], dtype=torch.float64) 
             
     #     ]
     # b_list = [
-    #         torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-30645.4682099649])
-    #     ]
+    #         torch.tensor([-286884.958823058], dtype=torch.float64),torch.tensor([-286884.958823058], dtype=torch.float64),torch.tensor([-286884.958823058], dtype=torch.float64), torch.tensor([-286884.958823058], dtype=torch.float64), torch.tensor([-286884.958823058], dtype=torch.float64), torch.tensor([-286884.958823058], dtype=torch.float64)]
+    # --- keep unscaled copies for residual checks ---
+    A_list_raw = [A.clone().double() for A in A_list]
+    B_list_raw = [B.clone().double() for B in B_list]
+    b_list_raw = [b.clone().double() for b in b_list]
     
     A_list, B_list, b_list = get_scaledABb_list(A_list, B_list, b_list, scaler)
     
     # cast to the correct dtype
-    A_list = [A_i.float() for A_i in A_list]
-    B_list = [B_i.float() for B_i in B_list]
-    b_list = [b_i.float() for b_i in b_list]
+    A_list = [A_i.double() for A_i in A_list]
+    B_list = [B_i.double() for B_i in B_list]
+    b_list = [b_i.double() for b_i in b_list]
     
     
     # def get_ScaleAndMean(scaler, x_dim, z_dim):

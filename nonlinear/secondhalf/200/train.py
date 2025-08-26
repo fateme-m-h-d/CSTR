@@ -13,7 +13,7 @@ import pandas as pd
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-torch.set_default_dtype(torch.float32)
+torch.set_default_dtype(torch.float64)
 
 # Load the scaler used for normalization
 scaler_path = "./scaler.pkl"  # Adjust this path if needed

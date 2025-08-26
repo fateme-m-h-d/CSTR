@@ -52,7 +52,7 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['state_dict'])
-    model.to(device)
+    model.double().to(device)
     model.eval()
     return model
 
@@ -76,7 +76,7 @@ def make_prediction(model, scaler, temperature):
     temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
 
     # Convert to tensor and make prediction
-    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float32).to(device)
+    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
 
     # Make prediction
     with torch.no_grad():
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     
     A = torch.tensor([[0]
                                 ])  #changed
-    B = torch.tensor([[1, 0, 0, 10, -10]
+    B = torch.tensor([[1, 0, 0, -10, +10]
                                 ])  #changed
     b = torch.tensor([1])    #changed
     
@@ -168,14 +168,76 @@ if __name__ == "__main__":
         print(f"Model loaded successfully from {NNmodel_path}")
     elif model_type =="KKT":
         A, B, b = get_scaledABb(A, B, b, scaler)
-        A = A.float()  # Ensure A is float32
-        B = B.float()  # Ensure B is float32
-        b = b.float()  # Ensure b is float32
+        A = A.double()  # Ensure A is float32
+        B = B.double()  # Ensure B is float32
+        b = b.double()  # Ensure b is float32
 
         model = load_saved_model(KKTmodel_path,"KKT",input_dim,hidden_dim,hidden_num,z0_dim,A,B,b)
     elif FileNotFoundError:
         print(f"Model file not found at {NNmodel_path}. Make sure the model is trained and the file path is correct.")
         exit(1)
+        
+    with torch.no_grad():
+        T_eval = np.linspace(280, 600.0, 500)
+    X4 = np.column_stack([T_eval, np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval)])  # (N,4)
+    X4_scaled = scaler.transform(X4)  # same scaler you used to scale A,B
+    x_scaled = X4_scaled[:, :1]       # (N,1)
+
+    # 2) Run the model (outputs are in *scaled* space for KKThPINN)
+    with torch.no_grad():
+        z_scaled = model(torch.tensor(x_scaled, dtype=torch.float64, device=torch.device("cpu"))).cpu().numpy()  # (N,3)
+
+    T_eval = np.linspace(280, 600.0, 500)
+    X4 = np.column_stack([T_eval, np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval), np.zeros_like(T_eval)])  # (N,4)
+    X4_scaled = scaler.transform(X4)  # same scaler you used to scale A,B
+    x_scaled = X4_scaled[:, :1]       # (N,1)
+
+    # 2) Run the model (outputs are in *scaled* space for KKThPINN)
+    with torch.no_grad():
+        z_scaled = model(torch.tensor(x_scaled, dtype=torch.float64, device=torch.device("cpu"))).cpu().numpy()  # (N,3)
+
+    # 3) Residual in *scaled* space using the *scaled* (A,B,b) for the LAST segment
+    A_s = A.cpu().numpy()     # (1,1)
+    B_s = B.cpu().numpy()     # (1,3)
+    b_s = b.cpu().numpy().reshape(1,)  # (1,)
+
+    r_scaled = (x_scaled @ A_s.T + z_scaled @ B_s.T - b_s).ravel()
+    print(f"[scaled] last seg 503–600: max|r|={np.abs(r_scaled).max():.3e}, mean|r|={np.abs(r_scaled).mean():.3e}")
+    violation_like_training = np.mean(np.abs(r_scaled))
+    print(violation_like_training)
+
+
+
+    # 4) Convert predictions back to *raw* units and compute raw residual with *raw* (A,B,b)
+    # #    Build a 4D array so inverse_transform hits the correct columns.
+    # tmp = np.zeros_like(X4_scaled)
+    # tmp[:, 0] = x_scaled[:, 0]
+    # tmp[:, 1:6] = z_scaled
+    # raw = scaler.inverse_transform(tmp)
+
+    # T_raw = raw[:, :1]          # (N,1)   raw K
+    # Z_raw = raw[:, 1:6]         # (N,3)   raw (Ca, Cb, Cc)
+
+    # keep raw copies A_list_raw/B_list_raw/b_list_raw from before scaling (see earlier message)
+    # A_r = A_list_raw[-1].detach().cpu().numpy()
+    # B_r = B_list_raw[-1].detach().cpu().numpy()
+    # b_r = float(b_list_raw[-1].detach().cpu().numpy().squeeze())
+
+    # r_raw = (T_raw @ A_r.T + Z_raw @ B_r.T - b_r).ravel()
+    # print(f"[raw]    last seg 503–600: max|r|={np.abs(r_raw).max():.3e}, mean|r|={np.abs(r_raw).mean():.3e}")
+
+    # 5) Quick plot of both
+    plt.figure()
+    plt.plot(T_eval, np.abs(r_scaled), label="scaled residual")
+    # plt.semilogy(T_eval, np.abs(r_raw), ".", label="raw residual")
+    plt.xlabel("Temperature (K)")
+    plt.ylabel("Violation |A·x + B·z − b|")
+    plt.yscale('log')
+    plt.title("KKT residuals")
+    plt.legend()
+    plt.grid(True, which="both")
+    plt.show()
+
 
     # Make predictions for new temperatures
     new_temperatures = np.linspace(280, 600, 500) #think about it

@@ -58,7 +58,7 @@ class NNOPT(nn.Module):
             self.fc2_list.append(fc2)
             
 
-    def custom_sigmoid(self, x, transition_point=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
+    def custom_sigmoid(self, x, transition_point=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=800000):
         transition_width = 100 / steepness
         w = (x - transition_point) / transition_width
         return torch.sigmoid(w)
@@ -66,7 +66,7 @@ class NNOPT(nn.Module):
     # def inverse_custom_sigmoid(x, transition_point, steepness):
     #     return 1.0 - custom_sigmoid(self, x, transition_point, steepness)
     
-    def get_masks(self, x, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
+    def get_masks(self, x, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=800000):
         """Return a list of masks, one per region. Shape of each: (batch, 1)."""
         masks = []
         n = len(self.fc1_list)
@@ -84,7 +84,7 @@ class NNOPT(nn.Module):
             masks.append(mask)
         return torch.cat(masks, dim=1)
 
-    def forward(self, x, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000):
+    def forward(self, x, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=800000):
         x0 = x                                             # input               
         for layer in self.layers[:-1]:
             x0 = F.relu(layer(x0))

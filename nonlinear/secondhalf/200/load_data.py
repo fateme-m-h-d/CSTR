@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sympy as sym
 from sympy import symbols, Eq, solve
 from scipy.optimize import fsolve
+from utils import load_data, get_scaledABb
 
 
 Cao = 1 #mol/L
@@ -52,7 +53,7 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     
     checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['state_dict'])
-    model.to(device)
+    model.double().to(device)
     model.eval()
     return model
 
@@ -76,7 +77,7 @@ def make_prediction(model, scaler, temperature):
     temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
 
     # Convert to tensor and make prediction
-    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float32).to(device)
+    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
 
     # Make prediction
     with torch.no_grad():
@@ -92,32 +93,12 @@ def make_prediction(model, scaler, temperature):
     return predictions_original
 
 if __name__ == "__main__":
-    # Load the scaler used during training
-    scaler_path = os.path.join(os.getcwd(), 'scaler.pkl')  # Construct the full path to the scaler.pkl file
-    try:
-        with open(scaler_path, 'rb') as f:
-            scaler = pickle.load(f)
-        print(f"Scaler loaded successfully from {scaler_path}")
-    except FileNotFoundError:
-        print(f"Scaler file not found at {scaler_path}. Make sure to save the scaler during training.")
-        exit(1)  # Exit the script as there's no way to proceed without the scaler
-    scaler.scale_[0] = max(scaler.scale_[0], 800)
-
-    # Load the model
-    # print(f"a: {a}, c: {c}, n: {d}, g: {e}")
+    _, scaler = load_data("./data.csv")
 
     input_dim = 1
     hidden_dim = 32
     hidden_num = 2
     z0_dim = 3
-    # A = torch.tensor([[d]])
-    # B = torch.tensor([[a,c,0]])
-    # b = torch.tensor([-e])
-    
-    # A = torch.tensor([[0]])
-    # B = torch.tensor([[1,1,1]])
-    # b = torch.tensor([3])
-    
     
     # A = torch.tensor([[0], [-0.0338064827931121]
     #                             ])  #changed
@@ -127,38 +108,21 @@ if __name__ == "__main__":
     
     
     
-    A = torch.tensor([[-0.03380648279311212]
+    # A = torch.tensor([[-19.455307300247398]
+    #                             ])  #changed
+    # B = torch.tensor([[ -11743.801825483246, -11742.801825486215, 0]
+    #                             ])  #changed
+    # b = torch.tensor([-22866.47311208096])
+    
+    A = torch.tensor([[- 198.802430563989]
                                 ])  #changed
-    B = torch.tensor([[-1.797600644357812, -0.797600644357812, 0]
+    B = torch.tensor([[ -168482.732203137, - 168481.732203863, 0]
                                 ])  #changed
-    b = torch.tensor([-13.317033354915457])    #changed
+    b = torch.tensor([-286884.958823058])
     
-    
-    def get_ScaleAndMean(scaler, x_dim, z_dim):
-        xscale = []
-        zscale = []
-        for idx in range(x_dim):
-            xscale.append(scaler.scale_[idx])
-        for idx in range(z_dim):
-            zscale.append((scaler.scale_[idx+x_dim]))
-        return xscale, zscale
-
-
-    def get_scaledABb(A, B, b, scaler):
-        x_dim = A.shape[1]
-        z_dim = B.shape[1]
-        xscale, zscale = get_ScaleAndMean(scaler, x_dim, z_dim)
-        xscale, zscale = torch.tensor(xscale), torch.tensor(zscale)
-        A_scale = torch.ones_like(A) * xscale
-        B_scale = torch.ones_like(B) * zscale
-        A_scaled = A * A_scale
-        B_scaled = B * B_scale
-        b_scaled = b
-        print("A_scaled:", A_scaled)
-        print("B_scaled:", B_scaled)
-        print("b_scaled:", b_scaled)
-        return A_scaled, B_scaled, b_scaled
-    
+    A = torch.tensor([[-198.802430563989]], dtype=torch.float64)
+    B = torch.tensor([[-168482.732203137, -168481.732203863, 0]], dtype=torch.float64)
+    b = torch.tensor([-286884.958823058], dtype=torch.float64)
 
     NNmodel_path = "./models/cstr/NN/0.2/MODELID_0.2_0.pth"
     KKTmodel_path = "./models/cstr/KKThPINN/0.2/MODELID_0.2_0.pth"
@@ -168,17 +132,86 @@ if __name__ == "__main__":
         print(f"Model loaded successfully from {NNmodel_path}")
     elif model_type =="KKT":
         A, B, b = get_scaledABb(A, B, b, scaler)
-        A = A.float()  # Ensure A is float32
-        B = B.float()  # Ensure B is float32
-        b = b.float()  # Ensure b is float32
+        A = A.double()  # Ensure A is float32
+        B = B.double()  # Ensure B is float32
+        b = b.double()  # Ensure b is float32
 
         model = load_saved_model(KKTmodel_path,"KKT",input_dim,hidden_dim,hidden_num,z0_dim,A,B,b)
     elif FileNotFoundError:
         print(f"Model file not found at {NNmodel_path}. Make sure the model is trained and the file path is correct.")
         exit(1)
+    
+    import inspect, models
+    print("models.py file =", models.__file__)
+    print("forward defined at", inspect.getsourcefile(type(model).forward))
+
+
+    # ───────────── PREPARE INPUTS (scaled & unscaled) ──────────
+    TEMPS = np.linspace(280, 600.0, 200)
+    T_unscaled = TEMPS.reshape(-1, 1)   # (N,1) raw K
+    # Build dummy rows to transform T consistently with training scaler
+    dummy = np.zeros((len(T_unscaled), 4), dtype=np.float64)
+    dummy[:, 0] = T_unscaled[:, 0]
+    X_scaled_np = scaler.transform(dummy)[:, :1]           # scaled T only
+    X_scaled    = torch.tensor(X_scaled_np, dtype=torch.float64, device=device)  # (N,1)
+        
+        # ───────────── PREDICT (scaled outputs) ────────────────────
+    with torch.no_grad():
+        Z_scaled = model(X_scaled)  # (N,3), still in scaled space
+        chunk = B.t() @ torch.inverse(B @ B.t())
+        Astar_now = - chunk @ A
+        Bstar_now = torch.eye(3, dtype=B.dtype, device=B.device) - chunk @ B
+        bstar_now = (chunk @ b.view(-1,1)).view(-1)
+    
+    print("ΔBstar =", (model.fc_fixed1.weight - Bstar_now).abs().max().item())
+    print("ΔAstar =", (model.fc_fixed2.weight - Astar_now).abs().max().item())
+    print("Δbstar =", (model.fc_fixed2.bias   - bstar_now).abs().max().item())
+        
+    #     r_ext = (A @ X_scaled.T) + (B @ Z_scaled.T) - b.view(1,1)
+    #      # the model's actual buffers (names assumed; adjust if different)
+    #     A_m = model.A.detach()
+    #     B_m = model.B.detach()
+    #     b_m = model.b.detach()
+    #     r_int = (A_m @ X_scaled.T) + (B_m @ Z_scaled.T) - b_m.view(1,1)
+    # print("max |A_ext - A_model| =", (A - A_m).abs().max().item())
+    # print("max |B_ext - B_model| =", (B - B_m).abs().max().item())
+    # print("max |b_ext - b_model| =", (b - b_m).abs().max().item())
+    # print("mean|r_ext| =", r_ext.abs().mean().item(), "   mean|r_int| =", r_int.abs().mean().item())
+        
+
+    Z_scaled_np = Z_scaled.detach().cpu().numpy()
+
+    # 3) Residual in *scaled* space using the *scaled* (A,B,b) for the LAST segment
+    A_s = A.cpu()   # (1,1)
+    B_s = B.cpu()   # (1,3)
+    b_s = b.cpu().reshape(1,)  # (1,)
+    
+    with torch.no_grad():
+        r_scaled_t = (A_s @ X_scaled.T) + (B_s @ Z_scaled.T) - b_s.view(-1, 1)  # (1,N)
+        r_scaled = r_scaled_t.squeeze(0).abs().detach().cpu().numpy()  # (N,)
+
+    # r_scaled = (X_scaled @ A_s.T + Z_scaled @ B_s.T - b_s).ravel()
+    print(f"[scaled] last seg 503–600: max|r|={np.abs(r_scaled).max():.3e}, mean|r|={np.abs(r_scaled).mean():.3e}")
+    violation_like_training = np.mean(np.abs(r_scaled))
+    print(violation_like_training)
+
+
+
+    # 5) Quick plot of both
+    plt.figure()
+    plt.scatter(TEMPS, np.abs(r_scaled), label="scaled residual")
+    # plt.semilogy(T_eval, np.abs(r_raw), ".", label="raw residual")
+    plt.xlabel("Temperature (K)")
+    plt.ylabel("Violation |A·x + B·z − b|")
+    plt.yscale('log')
+    plt.title("KKT residuals")
+    plt.legend()
+    plt.grid(True, which="both")
+    plt.show()
+
 
     # Make predictions for new temperatures
-    new_temperatures = np.linspace(280, 360, 300) #think about it
+    new_temperatures = np.linspace(280, 600, 200) #think about it
     #new_temperatures=np.array([450, 451])
     predictions = make_prediction(model, scaler, new_temperatures)
     print("Scaler Type:", type(scaler))
@@ -202,8 +235,8 @@ if __name__ == "__main__":
     plt.plot(new_temperatures, Cc_values1, color='g', label="Predicted Cc")
     
         # Define the range of T values
-    n = 300 #number of points
-    T_values = np.linspace(280, 360, n)  # Adjust the range and number of points as needed
+    n = 200 #number of points
+    T_values = np.linspace(360, 600, n)  # Adjust the range and number of points as needed
 
 
     # Initial guess for fsolve

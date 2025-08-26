@@ -40,7 +40,7 @@ plt.plot(val_loss_NN, 'b', label='NN Validation Loss')
 plt.title('Loss over Epochs')
 plt.xlabel('Epochs')
 plt.ylabel('RMSE')
-plt.ylim((0, 0.2))
+plt.ylim((0, 0.04))
 plt.legend()
 plt.show()
 

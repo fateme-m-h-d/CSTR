@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 import os
 import pickle
 import numpy as np
@@ -21,7 +22,7 @@ DEVICE       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # transition points and steepness (in **normalized** X‐units)
 TP    = [0.375, 0.425, 0.45, 0.5, 0.625]
-STEEP = 500000
+STEEP = 800000
 
 # ─── LOAD SCALER + DATA-LIN. COEFFS ──────────────────────────────────────────────
 
@@ -29,51 +30,52 @@ STEEP = 500000
 _, scaler = load_data(DATA_PATH)
 
 # 2) define your raw (un‐scaled) linearization coefficients here:
+
+A_list = [
+    torch.tensor([[-0.00301071551554214]], dtype=torch.float64),
+    torch.tensor([[-0.0287912896000818]], dtype=torch.float64),
+    torch.tensor([[-0.0589977043951539]], dtype=torch.float64),
+    torch.tensor([[-0.175928980736293]], dtype=torch.float64),
+    torch.tensor([[-5.68379236916079]], dtype=torch.float64),
+    torch.tensor([[-198.802430563989]], dtype=torch.float64)
+]
+B_list = [
+    torch.tensor([[-1.02825709223637, -0.0282570922363733, 0]], dtype=torch.float64),
+    torch.tensor([[-1.54923960097239, -0.549239600972388,   0]], dtype=torch.float64),
+    torch.tensor([[-6.41562952963354, -5.41562952963354,     0]], dtype=torch.float64),
+    torch.tensor([[-47.4935472673711, -46.4935472673712,     0]], dtype=torch.float64),
+    torch.tensor([[-2909.08659408943, -2908.08659408949,   0]], dtype=torch.float64),
+    torch.tensor([[-168482.732203137, -168481.732203863,   0]], dtype=torch.float64)
+]
+b_list = [
+    torch.tensor([-1.93327845562254], dtype=torch.float64),
+    torch.tensor([-11.1707510081181], dtype=torch.float64),
+    torch.tensor([-29.674961918774], dtype=torch.float64),
+    torch.tensor([-131.782655072763], dtype=torch.float64),
+    torch.tensor([-6065.64229189764], dtype=torch.float64),
+    torch.tensor([-286884.958823058], dtype=torch.float64)
+]
 # A_list = [
-#             torch.tensor([[- 0.00301071551554214]]),torch.tensor([[- 0.0287912896000818]]) ,torch.tensor([[- 0.0712637450806569]]),  torch.tensor([[- 0.425190394430034]]),torch.tensor([[- 25.5032870206085]])
+#             torch.tensor([[- 198.802430563989]]),torch.tensor([[- 198.802430563989]]) ,torch.tensor([[- 198.802430563989]]), torch.tensor([[- 198.802430563989]]), torch.tensor([[- 198.802430563989]]), torch.tensor([[- 198.802430563989]])
 #             # … add more rows if want more lines
 #         ]
 # B_list = [
-#             torch.tensor([[ -1.02825709223637, - 0.0282570922363733, 0]]),
-#             torch.tensor([[ -1.54923960097239, - 0.549239600972388, 0]]),
-#             torch.tensor([[ -10.2140189737442, - 9.21401897374424, 0]]),
-#             torch.tensor([[-147.284857782338, - 146.284857782338, 0]]),
-#             torch.tensor([[-15979.9623522557, - 15978.9623522524, 0]]) 
+#             torch.tensor([[ -168482.732203137, - 168481.732203863, 0]]),
+#             torch.tensor([[ -168482.732203137, - 168481.732203863, 0]]),
+#             torch.tensor([[-168482.732203137, - 168481.732203863, 0]]),
+#             torch.tensor([[-168482.732203137, - 168481.732203863, 0]]),
+#             torch.tensor([[-168482.732203137, - 168481.732203863, 0]]),
+#             torch.tensor([[-168482.732203137, - 168481.732203863, 0]]) 
             
 #         ]
 # b_list = [
-#             torch.tensor([-1.93327845562254]),torch.tensor([-11.1707510081181]),torch.tensor([-39.8296448877009]), torch.tensor([-363.930587960532]), torch.tensor([-30645.4682099649])
-#         ]
-A_list = [
-    torch.tensor([[-0.00301071551554214]]),
-    torch.tensor([[-0.0287912896000818]]),
-    torch.tensor([[-0.0589977043951539]]),
-    torch.tensor([[-0.175928980736293]]),
-    torch.tensor([[-5.68379236916079]]),
-    torch.tensor([[-198.802430563989]])
-]
-B_list = [
-    torch.tensor([[-1.02825709223637, -0.0282570922363733, 0]]),
-    torch.tensor([[-1.54923960097239, -0.549239600972388,   0]]),
-    torch.tensor([[-6.41562952963354, -5.41562952963354,     0]]),
-    torch.tensor([[-47.4935472673711, -46.4935472673712,     0]]),
-    torch.tensor([[-2909.08659408943, -2908.08659408949,   0]]),
-    torch.tensor([[-168482.732203137, -168481.732203863,   0]])
-]
-b_list = [
-    torch.tensor([-1.93327845562254]),
-    torch.tensor([-11.1707510081181]),
-    torch.tensor([-29.674961918774]),
-    torch.tensor([-131.782655072763]),
-    torch.tensor([-6065.64229189764]),
-    torch.tensor([-286884.958823058])
-]
-
+#             torch.tensor([-286884.958823058]),torch.tensor([-286884.958823058]),torch.tensor([-286884.958823058]), torch.tensor([-286884.958823058]), torch.tensor([-286884.958823058]), torch.tensor([-286884.958823058])
+# ]
 # 3) scale them exactly as you do in training
 A_list, B_list, b_list = get_scaledABb_list(A_list, B_list, b_list, scaler)
-A_list = [A.float().to(DEVICE) for A in A_list]
-B_list = [B.float().to(DEVICE) for B in B_list]
-b_list = [b.float().to(DEVICE) for b in b_list]
+A_list = [A.double().to(DEVICE) for A in A_list]
+B_list = [B.double().to(DEVICE) for B in B_list]
+b_list = [b.double().to(DEVICE) for b in b_list]
 
 
 # ─── load & scale your original dataset ────────────────────────────────
@@ -85,7 +87,7 @@ X_scaled = scaled_all[:, :1]                      # (N,1), to rebuild X below if
 Y_scaled = scaled_all[:, 1:]                      # (N,3)
 
 # make a torch tensor for the true outputs Y
-Y = torch.tensor(Y_scaled, dtype=torch.float32, device=DEVICE)  # (N,3)
+Y = torch.tensor(Y_scaled, dtype=torch.float64, device=DEVICE)  # (N,3)
 
 # ─── LOAD MODEL ────────────────────────────────────────────────────────────────
 
@@ -93,7 +95,7 @@ model = load_saved_model(
     MODEL_PATH, MODEL_TYPE, INPUT_DIM, HIDDEN_DIM, HIDDEN_NUM, Z0_DIM,
     A_list=A_list, B_list=B_list, b_list=b_list
 )
-model.to(DEVICE).eval()
+model.double().to(DEVICE).eval()
 
 # ─── PREPARE INPUT GRID ────────────────────────────────────────────────────────
 
@@ -102,7 +104,7 @@ temps = TEMPS.reshape(-1,1)
 dummy = np.zeros((len(temps),4), dtype=float)
 dummy[:,0] = temps[:,0]
 normed = scaler.transform(dummy)[:, :1]                  # (N,1)
-X = torch.tensor(normed, dtype=torch.float32, device=DEVICE)
+X = torch.tensor(normed, dtype=torch.float64, device=DEVICE)
 
 # ─── COMPUTE VIOLATIONS ───────────────────────────────────────────────────────
 
@@ -118,7 +120,7 @@ for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
     # Ai @ X.T  → (1×N),  Bi @ Z.T → (1×N),   bi.view(-1,1) repeat → (1×N)
     v_pred = Ai @ X.T + Bi @ Z.T - bi.view(1,-1)
     v_true = Ai @ X.T + Bi @ Y.T - bi.view(1,-1)
-    v = v_pred - v_true
+    v = v_pred 
     
     if   i == 0:
         mask = 1.0 - sigmoid(X, TP[0])
@@ -163,14 +165,22 @@ print(f"Average violation per temperature (across all constraints): {overall_avg
 # for i, v in enumerate(V):
 #     print(f"v[{i}] at ~300K =", v[idx])
 
+
+print("V shape:", V.shape)
+print("V max/min:", np.nanmax(V), np.nanmin(V))
+print("|V| max:", np.nanmax(np.abs(V)))
+for k in range(V.shape[0]):
+    print(f"constraint {k}: max |V| =", np.nanmax(np.abs(V[k])))
+
 plt.figure(figsize=(8,5))
 # plt.plot(TEMPS, V, label="total violation")
-for i, v in enumerate(V):
-    plt.plot(TEMPS, v, label=f"constraint {i}")
+for i, v in enumerate(V_abs):
+    plt.scatter(TEMPS, v, label=f"constraint {i}")             # changed from plot to scatter
 plt.axhline(0, color='k', linestyle='--', linewidth=0.8)
 plt.xlabel("Temperature (K)")
 plt.ylabel("Violation $v_i=A_i x + B_i z - b_i$")
-# plt.yscale('log')
+plt.yscale('log')                                              # added this line
+plt.ylim(1e-25, 2e6)  
 plt.title("Constraint violations vs temperature")
 plt.legend()
 plt.grid(True)
@@ -193,7 +203,7 @@ plt.show()
 
 
 # build a 1×1 input tensor for T
-X_single = torch.tensor([[0.625]], dtype=torch.float32)  
+X_single = torch.tensor([[0.625]], dtype=torch.float64)  
 # get the model’s prediction z = model(X_single) → shape (1, z_dim)
 z_single = model(X_single)            
 # now plug that into the linear piece:

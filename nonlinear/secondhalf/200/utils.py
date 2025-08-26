@@ -92,7 +92,7 @@ def load_data(dataset_path):
     scaler = MaxAbsScaler()
     scaler.fit(dataset)
     # Manually set a higher max value for temperature input
-    scaler.scale_[0] = max(scaler.scale_[0], 800)  # Assuming temperature is the first feature
+    # scaler.scale_[0] = max(scaler.scale_[0], 800)  # Assuming temperature is the first feature
     
     print("Scaler Factors:", scaler.scale_)
 
@@ -180,11 +180,18 @@ class Data_cstr(data.Dataset):
         # self.b = torch.tensor([3, -13.317033354915457])    #changed
         
         
-        self.A = torch.tensor([[-19.455307300247398]
+        # self.A = torch.tensor([[-19.455307300247398]
+        #                         ])  #changed
+        # self.B = torch.tensor([[ -11743.801825483246, -11742.801825486215, 0]
+        #                         ])  #changed
+        # self.b = torch.tensor([-22866.47311208096])    #changed
+        
+        
+        self.A = torch.tensor([[- 198.802430563989]
                                 ])  #changed
-        self.B = torch.tensor([[ -11743.801825483246, -11742.801825486215, 0]
+        self.B = torch.tensor([[ -168482.732203137, - 168481.732203863, 0]
                                 ])  #changed
-        self.b = torch.tensor([-22866.47311208096])    #changed
+        self.b = torch.tensor([-286884.958823058])    #changed
         
 
         self.constrained_indexes = list(set([index for index in torch.nonzero(self.B)[:, -1].tolist()]))

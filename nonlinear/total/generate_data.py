@@ -26,14 +26,14 @@ def equations(variables, T):
     kf = Afo * np.exp(-Eaf/(R*T)) #Arrhenius eqn for forward reaction
     kr = Aro * np.exp(-Ear/(R*T)) #arrhenius eqn for reverse reaction
 
-    eq1 = Cao - Ca + -kf*Ca*(Cb**2)*tau + kr*(Cao-Ca+Cbo-Cb)*tau
-    eq2 = Cbo - Cb + -2*kf*Ca*(Cb**2)*tau + 2*kr*(Cao-Ca+Cbo-Cb)*tau
+    eq1 = Cao - Ca + -kf*Ca*(Cb**2)*tau + kr*(Cc)*tau
+    eq2 = Cbo - Cb + -2*kf*Ca*(Cb**2)*tau + 2*kr*(Cc)*tau
     eq3=Cc-Cao+Ca-Cbo+Cb
     return [eq1, eq2, eq3]
 
 # Define the range of T values
 n = 500 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
-T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
+T_values = np.linspace(280,600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
 
 
 # Initial guess for fsolve
@@ -46,7 +46,7 @@ Cc_values = np.ones(n)*Cco
 i=0
 # Loop over each value of T and solve for Ca and Cb
 for T in T_values:
-    solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True)
+    solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True, xtol=1e-11)
     #solution, mesg = fsolve(equations, initial_guess, args=(T,))
     if ier == 1:  # ier == 1 indicates successful convergence
        Cc_values[i], Cb_values[i], Ca_values[i] = solution[0], solution[1], solution[2]
@@ -77,6 +77,27 @@ data.to_csv("./data.csv", index=False)
 #data.to_excel("./data.xlsx", index=False)
 print("Data saved to 'data.csv'")
 
+kf = Afo * np.exp(-Eaf/(R*T_values)) #Arrhenius eqn for forward reaction
+kr = Aro * np.exp(-Ear/(R*T_values)) #arrhenius eqn for reverse reaction
+f2 = (Cao - Ca_values
+    - kf * Ca_values * (Cb_values**2) * tau
+    + kr * (Cao - Ca_values + Cbo - Cb_values + Cco) * tau)
+
+print("\n=== Nonlinear Constraint Values ===")
+for i, T0 in enumerate(T_values):
+    # print(f"T = {T0:.1f} K")
+    # print(f"  f(T,Ca,Cb) = {f1[i]:.6e}")
+    # print("-"*55)
+    plt.scatter(T0, f2[i], color='blue', label='f(T,Ca,Cb)' if i == 0 else "")
+plt.title("Nonlinear Constraint Values vs Temperature - prediction")
+plt.xlabel("Temperature (K)")
+plt.ylabel("nonlinear constraint")
+plt.legend()
+plt.show()
+
+f3 = kf * Cao * (Cbo**2) * tau
+plt.plot(T_values, f3, label='kf * Cao * (Cbo**2) * tau', color='orange')
+plt.show()
 # #added_part to generate data for check how effective can it extrapolate!
 # T_limited = np.linspace(280, 600, 1000)
 # data_limited = pd.DataFrame({

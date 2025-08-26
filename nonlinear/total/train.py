@@ -315,7 +315,7 @@ def run_training(args, data):
             mse = optimizer_step(model, optimizer, loss_func, X, Y, args, data)
             pred_diff = conservation_step(model, X, data, args)
             train_loss      += mse
-            train_violation += torch.abs(pred_diff.reshape(-1)).mean()   # ← CHANGED
+            train_violation += torch.abs(pred_diff.reshape(-1)).nanmean()   # ← CHANGED
 
         train_loss      /= len(data['train_loader'])
         train_violation /= len(data['train_loader'])
@@ -348,7 +348,7 @@ def run_training(args, data):
         T_scaled = torch.from_numpy(T_raw / 800).float().to(device)
 
         # transition_points & steepness: use the same ones you passed to forward()
-        M = model.get_masks(T_scaled, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=500000)   # (N, n_regions)
+        M = model.get_masks(T_scaled, transition_points=[0.375, 0.425, 0.45, 0.5, 0.625], steepness=800000)   # (N, n_regions)
         # for t, row in zip(T_raw.ravel(), M.cpu().numpy()):
         #     print(f"T={t:.1f} -> " + ", ".join([f"{m:.4f}" for m in row]))
         df = pd.DataFrame(
@@ -401,11 +401,8 @@ def conservation_step(model, X, data, args):
     model.eval()
     with torch.no_grad():
         pred = model(X)
-        pred_diff = get_violation(
-            args, data, X, pred,
-            transition_points=[0.375, 0.425, 0.45, 0.5, 0.625],
-            steepness=500000
-        )
+        pred_diff = get_violation(args, data, X, pred, 
+                                    RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,500/800),(500/800,600/800)])
     return pred_diff
 
 
@@ -421,11 +418,8 @@ def test(model, data, args):
         for X, Y in data['val_loader']:
             X, Y = X.to(device), Y.to(device)
             pred = model(X)
-            pred_diff = get_violation(
-                args, data, X, pred,
-                transition_points=[0.375, 0.425, 0.45, 0.5, 0.625],
-                steepness=500000
-            )
+            pred_diff = get_violation(args, data, X, pred, 
+                                    RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,500/800),(500/800,600/800)])
 
             if args.loss_type == 'PINN':
                 mse, pinn = loss_func(X, pred, Y)
@@ -433,7 +427,7 @@ def test(model, data, args):
             else:  # MSE
                 test_loss += loss_func(pred, Y).item()
 
-            test_violation += torch.abs(pred_diff.reshape(-1)).mean()
+            test_violation += torch.abs(pred_diff.reshape(-1)).nanmean()
 
     test_loss      /= len(data['val_loader'])
     test_violation /= len(data['val_loader'])
@@ -467,13 +461,10 @@ def evaluate_model(data, args):
             for X, Y in data['test_loader']:
                 X, Y = X.to(device), Y.to(device)
                 pred = model(X)
-                pred_diff = get_violation(
-                    args, data, X, pred,
-                    transition_points=[0.375, 0.425, 0.45, 0.5, 0.625],
-                    steepness=500000
-                )
+                pred_diff = get_violation(args, data, X, pred, 
+                                    RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,500/800),(500/800,600/800)])
                 rmse_total += loss_func(pred, Y).item()
-                violation  += torch.abs(pred_diff.reshape(-1)).mean()
+                violation  += torch.abs(pred_diff.reshape(-1)).nanmean()
 
         rmse_total = np.sqrt(rmse_total / len(data['test_loader']))
         violation  = (violation / len(data['test_loader'])).item()
@@ -509,7 +500,7 @@ def evaluate_model(data, args):
                                 @ bstar.unsqueeze(0)
 
                         # apply same sigmoid masks:
-                        def σ(x, t, s=500000):
+                        def σ(x, t, s=800000):
                             w = (x - t) / (100/s)
                             return torch.sigmoid(w)
 

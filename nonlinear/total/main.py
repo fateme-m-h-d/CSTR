@@ -32,7 +32,7 @@ def add_arguments():
     parser.add_argument('--dataset_path', type=str)
     parser.add_argument('--val_ratio', type=float, default=0.2)
     parser.add_argument('--job', type=str, help='choose from train, experiment')
-    # parser.add_argument('--runs', type=int, default=1)
+    # parser.add_argument('--runs', type=int, default=10)
     parser.add_argument('--runs', type=int, default=1, help='Total runs if you want to loop')
     parser.add_argument('--run', type=int, default=0, help='Current run index')
 
@@ -62,7 +62,7 @@ def main(args):
         #         elif args.model == 'KKThPINN':
         #             args.loss_type = 'MSE'
 
-        #         args.run = i
+                # args.run = i
                 args.run = 0
                 print(f'\n\nEvaluating {args.model} at run {args.run}')
                 data = LoadData(args)
