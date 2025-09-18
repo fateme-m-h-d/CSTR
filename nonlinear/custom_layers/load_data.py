@@ -43,12 +43,12 @@ from models import NN, NNOPT
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 # if the model is NN (line 294 of the code), set the A, B, b equal to None in the code below.
-def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_dim, A, B, b):
+def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b):
     # Load the saved model
     if model_type == "NN":
-        model = NN(input_dim, hidden_dim, hidden_num, z0_dim)
+        model = NN(input_dim, hidden_dim, hidden_num, z0_inner_dim)
     elif model_type == "KKT":
-        model = NNOPT(input_dim, hidden_dim, hidden_num, z0_dim, A, B, b)
+        model = NNOPT(input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b)
     
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
@@ -57,39 +57,80 @@ def load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, 
     return model
 
 def make_prediction(model, scaler, temperature):
-    # Create a dummy array with the same structure as the original dataset (input + outputs)
-    # Assuming the original dataset had 1 input and 3 outputs (total 4 features)
-    if isinstance(temperature, (int, float)):
-        temperature = np.array([[temperature]])
-    elif isinstance(temperature, list) or isinstance(temperature, np.ndarray):
-        temperature = np.array(temperature).reshape(-1, 1)
+    """
+    temperature: scalar, list, or array of temperatures in K
+    returns: np.ndarray of shape (N, 3) for NN or (N, 5) for KKThPINN,
+             on the original (inverse-scaled) units.
+    """
+    # --- normalize temperature(s) the same way you trained ---
+    if isinstance(temperature, (int, float, np.floating)):
+        temperature = np.array([[float(temperature)]])
+    else:
+        temperature = np.asarray(temperature, dtype=float).reshape(-1, 1)
 
-    # Create a dummy array with 4 features (input + outputs)
-    num_samples = temperature.shape[0]
-    dummy_full_data = np.zeros((num_samples, 6))
-    dummy_full_data[:, 0] = temperature[:, 0]  # Set the temperature value as the first feature
+    n = temperature.shape[0]
 
-    # Transform the entire dummy dataset with the scaler
-    transformed_data = scaler.transform(dummy_full_data)
+    # Build a dummy [T, Ca, Cb, Cc, f, g] array so we can reuse the scaler
+    dummy_full = np.zeros((n, 6), dtype=float)
+    dummy_full[:, 0] = temperature[:, 0]
 
-    # Extract the transformed input (temperature)
-    temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
+    # Scale using the fitted scaler
+    transformed = scaler.transform(dummy_full)
+    T_norm = transformed[:, :1]                      # first feature is T
 
-    # Convert to tensor and make prediction
-    temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
-
-    # Make prediction
+    # Run the model
+    X = torch.tensor(T_norm, dtype=torch.float64).to(device)
     with torch.no_grad():
-        output = model(temperature_tensor)
+        out = model(X).cpu().numpy()                 # shape: (n, 3) or (n, 5)
 
-    # Convert predictions to numpy and inverse-transform the complete dataset
-    predictions = output.cpu().numpy()
-    dummy_full_data[:, 1:] = predictions  # Insert the predictions into the dummy array to inverse transform
+    # Insert predictions back into the dummy array for inverse transform
+    if out.shape[1] == 3:
+        dummy_full[:, 1:4] = out                     # Ca, Cb, Cc
+        num_out = 3
+    elif out.shape[1] == 5:
+        dummy_full[:, 1:6] = out                     # Ca, Cb, Cc, f, g
+        num_out = 5
+    else:
+        raise ValueError(f"Unexpected model output width {out.shape[1]} (expected 3 or 5).")
 
-    # Inverse transform to get the original scale
-    predictions_original = scaler.inverse_transform(dummy_full_data)[:, 1:]  # Extract only the output features
+    # Inverse-scale and return only the predicted outputs
+    inv = scaler.inverse_transform(dummy_full)
+    return inv[:, 1:1 + num_out]
 
-    return predictions_original
+# def make_prediction(model, scaler, temperature):
+#     # Create a dummy array with the same structure as the original dataset (input + outputs)
+#     # Assuming the original dataset had 1 input and 3 outputs (total 4 features)
+#     if isinstance(temperature, (int, float)):
+#         temperature = np.array([[temperature]])
+#     elif isinstance(temperature, list) or isinstance(temperature, np.ndarray):
+#         temperature = np.array(temperature).reshape(-1, 1)
+
+#     # Create a dummy array with 4 features (input + outputs)
+#     num_samples = temperature.shape[0]
+#     dummy_full_data = np.zeros((num_samples, 6))
+#     dummy_full_data[:, 0] = temperature[:, 0]  # Set the temperature value as the first feature
+
+#     # Transform the entire dummy dataset with the scaler
+#     transformed_data = scaler.transform(dummy_full_data)
+
+#     # Extract the transformed input (temperature)
+#     temperature_normalized = transformed_data[:, :1]  # Only use the first feature for input
+
+#     # Convert to tensor and make prediction
+#     temperature_tensor = torch.tensor(temperature_normalized, dtype=torch.float64).to(device)
+
+#     # Make predictionmake
+#     with torch.no_grad():
+#         output = model(temperature_tensor)
+
+#     # Convert predictions to numpy and inverse-transform the complete dataset
+#     predictions = output.cpu().numpy()
+#     dummy_full_data[:, 1:] = predictions  # Insert the predictions into the dummy array to inverse transform
+
+#     # Inverse transform to get the original scale
+#     predictions_original = scaler.inverse_transform(dummy_full_data)[:, 1:]  # Extract only the output features
+
+#     return predictions_original
 
 if __name__ == "__main__":
     # Load the scaler used during training
@@ -110,6 +151,7 @@ if __name__ == "__main__":
     hidden_dim = 32
     hidden_num = 2
     z0_dim = 5
+    z0_inner_dim = 3
     # A = torch.tensor([[d]])
     # B = torch.tensor([[a,c,0]])
     # b = torch.tensor([-e])
@@ -169,7 +211,7 @@ if __name__ == "__main__":
     KKTmodel_path = "./models/cstr/KKThPINN/0.2/MODELID_0.2_0.pth"
     model_type = "KKT" #change this to produce NN or KKT results
     if model_type == "NN":
-        model = load_saved_model(NNmodel_path, "NN", input_dim, hidden_dim, hidden_num, z0_dim)
+        model = load_saved_model(NNmodel_path, "NN", input_dim, hidden_dim, hidden_num, z0_inner_dim)
         model = model.double()
         model.to(device)
         print(f"Model loaded successfully from {NNmodel_path}")
@@ -179,7 +221,7 @@ if __name__ == "__main__":
         B = B.double()  
         b = b.double()  
 
-        model = load_saved_model(KKTmodel_path,"KKT",input_dim,hidden_dim,hidden_num,z0_dim,A,B,b)
+        model = load_saved_model(KKTmodel_path,"KKT",input_dim,hidden_dim,hidden_num,z0_inner_dim,z0_dim,A,B,b)
         model = model.double()
         model.to(device)
     elif FileNotFoundError:
@@ -187,7 +229,7 @@ if __name__ == "__main__":
         exit(1)
 
     # Make predictions for new temperatures
-    new_temperatures = np.linspace(280, 600, 200) #think about it
+    new_temperatures = np.linspace(280, 600, 30) #think about it
     #new_temperatures=np.array([450, 451])
     predictions = make_prediction(model, scaler, new_temperatures)
     print("Scaler Type:", type(scaler))
@@ -211,7 +253,7 @@ if __name__ == "__main__":
     plt.plot(new_temperatures, Cc_values1, color='g', label="Predicted Cc")
     
         # Define the range of T values
-    n = 600 #number of points
+    n = 30 #number of points
     T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed
 
 
@@ -225,7 +267,7 @@ if __name__ == "__main__":
     i=0
     # Loop over each value of T and solve for Ca and Cb
     for T in T_values:
-        solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True)
+        solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True, xtol= 1.0e-11)
         #solution, mesg = fsolve(equations, initial_guess, args=(T,))
         if ier == 1:  # ier == 1 indicates successful convergence
             Cc_values[i], Cb_values[i], Ca_values[i] = solution[0], solution[1], solution[2]

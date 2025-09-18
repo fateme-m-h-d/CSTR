@@ -49,3 +49,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+import numpy as np, pandas as pd, scipy.stats as st
+
+df = pd.read_csv("experiment_epoch_errors.csv")
+nn  = df["NN_Experiment_Error"].dropna().to_numpy()
+kkt = df["KKThPINN_Experiment_Error"].dropna().to_numpy()
+
+t, p = st.ttest_ind(kkt, nn, equal_var=False)  # Welch t-test
+d = (kkt.mean() - nn.mean()) / np.sqrt(0.5*(kkt.var(ddof=1)+nn.var(ddof=1)))
+print(f"Welch t-test p={p:.4g}, Cohen's d={d:.3f}")

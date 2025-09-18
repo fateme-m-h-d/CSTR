@@ -10,6 +10,8 @@ import pickle
 
 from scipy.optimize import fsolve  # for ground-truth solver
 
+from scipy import stats as st
+
 # === Configuration ===
 # base_dir = "./CSTR/nonlinear/total"
 base_dir = os.getcwd()   # must be run from within total/
@@ -52,7 +54,7 @@ def equations(variables, T):
     eq3=Cc-Cao+Ca-Cbo+Cb
     return [eq1, eq2, eq3]
 
-def get_ground_truth(n=200):
+def get_ground_truth(n=30):
     """
     Uses fsolve to compute Ca, Cb, Cc over a range of T from 280..600 K.
     Returns (T_values, Ca_values, Cb_values, Cc_values).
@@ -65,7 +67,7 @@ def get_ground_truth(n=200):
     initial_guess = [Cco, Cbo, Cao]  # [Cc, Cb, Ca]
 
     for i, T in enumerate(T_values):
-        solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True)
+        solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True, xtol= 1.0e-11)
         if ier == 1:  # ier == 1 indicates successful convergence
             Cc_values[i], Cb_values[i], Ca_values[i] = solution
         else:
@@ -123,6 +125,7 @@ def run_main(model_name, job):
         error = extract_last_epoch_error(result.stdout)
     elif job == 'experiment':
         error = extract_experiment_error(result.stdout)
+        print(f"Experiment RMSE3: {error}")
     else:
         error = None
     return error
@@ -133,7 +136,7 @@ def extract_experiment_error(output):
         if line.strip().startswith("{") and line.strip().endswith("}"):
             try:
                 scores = ast.literal_eval(line.strip())
-                return float(scores['rmse_total'])
+                return float(scores.get("rmse_inner", scores.get("rmse_total")))
             except (SyntaxError, KeyError, ValueError):
                 return None
     return None
@@ -192,6 +195,8 @@ def run_model_experiments(model_name, num_iterations):
     """
     training_errors = []
     experiment_errors = []
+    band_low_rmse3    = []   # <— NEW
+    band_high_rmse3   = []   # <— NEW
     
     # Create a figure/axes for all runs (so we can keep adding lines)
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -225,6 +230,17 @@ def run_model_experiments(model_name, num_iterations):
         # 2) Plot them on the same figure
         plot_predictions_on_axes(ax, X_test, Y_pred, run_number=i+1, model_name=model_name)
         
+        
+        # Ground truth on the same grid length
+        n = X_test.shape[0]
+        T_vals, Ca_vals, Cb_vals, Cc_vals, _, _ = get_ground_truth(n=n)
+
+        # Compute banded RMSE3 and store
+        low_rmse, high_rmse = _band_rmse3(X_test.squeeze(), Y_pred, Ca_vals, Cb_vals, Cc_vals)
+        band_low_rmse3.append(low_rmse)
+        band_high_rmse3.append(high_rmse)
+        
+        
         # Clear the folder for the next iteration (unless it's the last iteration)
         if i < num_iterations - 1:
             clear_folder()
@@ -239,7 +255,7 @@ def run_model_experiments(model_name, num_iterations):
     print(f"Saved combined plot at {plot_path}")
     plt.close()
     
-    return training_errors, experiment_errors
+    return training_errors, experiment_errors, band_low_rmse3, band_high_rmse3
 
 
 def plot_predictions_on_axes(ax, X, Y_pred, run_number, model_name):
@@ -268,13 +284,48 @@ def plot_ground_truth(ax):
     """
     Plots the ground truth curves for Ca, Cb, Cc over T=280..600 on the given axes.
     """
-    n = 200
+    n = 30
     T_vals, Ca_vals, Cb_vals, Cc_vals, f, g = get_ground_truth(n=n)
 
     # Plot in dashed lines
     ax.plot(T_vals, Ca_vals, 'b--', label='Ground truth Ca')
     ax.plot(T_vals, Cb_vals, 'r--', label='Ground truth Cb')
     ax.plot(T_vals, Cc_vals, 'g--', label='Ground truth Cc')
+    
+
+def _band_rmse3(T, Y_pred, Ca_true, Cb_true, Cc_true):
+    """
+    T:       (N,) or (N,1) temperatures
+    Y_pred:  (N,>=3) model predictions (first 3 columns are Ca,Cb,Cc)
+    *_true:  (N,) ground-truth arrays
+    returns: (rmse_low, rmse_high)
+    """
+    T = T.reshape(-1)
+    Yt = np.stack([Ca_true, Cb_true, Cc_true], axis=1)
+    err = Y_pred[:, :3] - Yt  # (N,3)
+
+    def rmse_on(mask):
+        if mask.sum() == 0:
+            return float("nan")
+        return float(np.sqrt(np.mean(err[mask]**2)))
+
+    low_mask  = (T <= 300.0)
+    high_mask = (T >= 520.0)
+    return rmse_on(low_mask), rmse_on(high_mask)
+
+
+def _welch_and_d(a, b):
+    """
+    Welch's t-test and Cohen's d (pooled SD) for 1-D arrays 'a' and 'b'.
+    Returns (t, p, d, mean_a, mean_b, var_a, var_b).
+    """
+    a = np.asarray(a, dtype=float); b = np.asarray(b, dtype=float)
+    t, p = st.ttest_ind(a, b, equal_var=False)
+    # Cohen's d with simple pooled SD (works fine for quick effect size)
+    sp = np.sqrt(0.5*(a.var(ddof=1) + b.var(ddof=1)))
+    d = (b.mean() - a.mean()) / sp if sp > 0 else 0.0
+    return t, p, d, a.mean(), b.mean(), a.var(ddof=1), b.var(ddof=1)
+
 
 def get_predictions(model_name):
     """
@@ -300,6 +351,7 @@ def get_predictions(model_name):
     hidden_dim = 32
     hidden_num = 2
     z0_dim = 5
+    z0_inner_dim = 3 
 
     # Choose model path and parameters based on model_name
     if model_name == "NN":
@@ -307,6 +359,11 @@ def get_predictions(model_name):
         model_type = "NN"
         # A, B, b = None, None, None
         A, B, b = None, None, None
+        z0_inner_dim = 3
+        from load_data import load_saved_model, make_prediction
+        model = load_saved_model(model_path, model_type,
+                             input_dim, hidden_dim, hidden_num,z0_inner_dim,
+                             z0_dim, A, B, b)
     elif model_name == "KKThPINN":
         model_path = "./new1/models/cstr/KKThPINN/0.2/MODELID_0.2_0.pth"
         model_type = "KKT"  # Use "KKT" to load KKThPINN
@@ -314,9 +371,9 @@ def get_predictions(model_name):
         # B = torch.tensor([[1, 1, 1]])
         # b = torch.tensor([3])
         
-        A = torch.tensor([[0]])
-        B = torch.tensor([[1, 0, 0, -10, 10]])
-        b = torch.tensor([1])
+        A = torch.tensor([[0]], dtype=torch.float64)
+        B = torch.tensor([[1, 0, 0, -10, 10]], dtype=torch.float64)
+        b = torch.tensor([1], dtype=torch.float64)
         
         # A = A.float()
         # B = B.float()
@@ -325,21 +382,26 @@ def get_predictions(model_name):
         A = A.double()
         B = B.double()
         b = b.double()
+        
+        from load_data import load_saved_model, make_prediction
+        model = load_saved_model(model_path, model_type,
+                             input_dim, hidden_dim, hidden_num, z0_inner_dim,
+                             z0_dim, A, B, b)   
 
     else:
         print("Unknown model name:", model_name)
         return None, None
 
-    # Import the model-loading functions from load_data.py
-    from load_data import load_saved_model, make_prediction
+    # # Import the model-loading functions from load_data.py
+    # from load_data import load_saved_model, make_prediction
 
-    # Load the model
-    model = load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_dim, A, B, b)
+    # # Load the model
+    # model = load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b)
     model = model.double()
     # model.to(device)
     
     # Define the range of temperatures for prediction (e.g., from 280K to 600K)
-    new_temperatures = np.linspace(280, 600, 200)  # 300 points
+    new_temperatures = np.linspace(280, 600, 30)  # 300 points
     # Make predictions using your make_prediction function
     predictions = make_prediction(model, scaler, new_temperatures)
     
@@ -354,14 +416,14 @@ def main():
     
     # Run experiments for NN
     print("\n******** Running experiments for NN ********\n")
-    nn_training_errors, nn_experiment_errors = run_model_experiments("NN", num_iterations)
+    nn_training_errors, nn_experiment_errors, nn_low, nn_high = run_model_experiments("NN", num_iterations)
     
     # Clear folder before next model (optional)
     clear_folder()
     
     # Run experiments for KKThPINN (KKT)
     print("\n******** Running experiments for KKThPINN ********\n")
-    kkt_training_errors, kkt_experiment_errors = run_model_experiments("KKThPINN", num_iterations)
+    kkt_training_errors, kkt_experiment_errors, kkt_low, kkt_high = run_model_experiments("KKThPINN", num_iterations)
     
     # Save training errors for both models in one CSV file
     training_df = pd.DataFrame({
@@ -380,6 +442,23 @@ def main():
     })
     experiment_df.to_csv(experiment_csv_path, index=False)
     print(f"Experiment errors saved at: {experiment_csv_path}")
+    
+    
+    # ---- NEW: banded RMSE₃ summary & Welch tests ----
+    nn_low  = np.array(nn_low, dtype=float);   kkt_low  = np.array(kkt_low, dtype=float)
+    nn_high = np.array(nn_high, dtype=float);  kkt_high = np.array(kkt_high, dtype=float)
+
+    def _print_band(name, a, b):
+        t, p, d, ma, mb, va, vb = _welch_and_d(a, b)
+        print(f"\n[{name}] RMSE₃  —  NN: mean={ma:.6f}, var={va:.6e} | KKThPINN: mean={mb:.6f}, var={vb:.6e}")
+        print(f"Welch t-test: t={t:.3f}, p={p:.4f} | Cohen's d={d:.3f}")
+        if p < 0.05:
+            print("=> Significant difference.")
+        else:
+            print("=> No significant difference.")
+
+    _print_band("LOW (T ≤ 300 K)",  nn_low,  kkt_low)
+    _print_band("HIGH (T ≥ 520 K)", nn_high, kkt_high)
 
 if __name__ == "__main__":
     main()

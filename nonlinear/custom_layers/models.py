@@ -82,12 +82,15 @@ class NNOPT(nn.Module):
         z0 = self.layers[-1](x0)                            # output after NN
         
         Ca, Cb, Cc = z0[:, 0:1], z0[:, 1:2], z0[:, 2:3]
+        
+        Ca_unscaled = z0[:, 0:1] * scaler.scale_[1]  # unscale Ca
+        Cb_unscaled = z0[:, 1:2] * scaler.scale_[2]
 
         kf = Afo * torch.exp(-Eaf / (R * T))
         kr = Aro * torch.exp(-Ear / (R * T))
 
-        g = (kf / scaler.scale_[5]) * Ca * (Cb ** 2)
-        f = (kr / scaler.scale_[4]) * (Cao - Ca + Cbo - Cb + Cco)
+        g = (kf / scaler.scale_[5]) * Ca_unscaled * (Cb_unscaled ** 2)
+        f = (kr / scaler.scale_[4]) * (Cao - Ca_unscaled + Cbo - Cb_unscaled + Cco)
         
         basis_outputs = torch.cat([Ca, Cb , Cc, f, g], dim=1)
 

@@ -42,16 +42,16 @@ def LoadData(args):
     print(f'train set size: {len(dataset.train_set)}, val set size: {len(dataset.val_set)}, test set size: {len(dataset.test_set)}')
 
     data_dict = {'train_loader': train_loader, 'val_loader': val_loader, 'test_loader': test_loader,
-                 'dataset': dataset, 'A': A, 'B': B, 'b': b.unsqueeze(1),
+                 'dataset': dataset, 'A': A, 'B': B, 'b': b.unsqueeze(1), 'scaler': scaler
                  }
     return data_dict
 
 
 def LoadModel(args, data):
     if args.model == 'NN':
-        model = NN(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_dim)
+        model = NN(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_inner_dim)
     elif args.model == 'KKThPINN':
-        model = NNOPT(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_dim,
+        model = NNOPT(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_inner_dim, args.z0_dim,
                       data['A'], data['B'], data['b'])
     else:
         raise ValueError('Model not supported!')

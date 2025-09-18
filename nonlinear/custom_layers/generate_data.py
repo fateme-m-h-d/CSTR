@@ -1,9 +1,13 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import sympy as sym
 from sympy import symbols, Eq, solve
 from scipy.optimize import fsolve
+import os
+import matplotlib
+matplotlib.use("Agg")  # must be BEFORE importing pyplot
+import matplotlib.pyplot as plt
+os.makedirs("figs", exist_ok=True)
 
 
 Cao = 1 #mol/L
@@ -32,7 +36,7 @@ def equations(variables, T):
     return [eq1, eq2, eq3]
 
 # Define the range of T values
-n = 200 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
+n = 30 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
 T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
 
 
@@ -46,28 +50,13 @@ Cc_values = np.ones(n)*Cco
 i=0
 # Loop over each value of T and solve for Ca and Cb
 for T in T_values:
-    solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True)
+    solution, infodict, ier, mesg = fsolve(equations, initial_guess, args=(T,), full_output=True, xtol= 1.0e-11)
     #solution, mesg = fsolve(equations, initial_guess, args=(T,))
     if ier == 1:  # ier == 1 indicates successful convergence
        Cc_values[i], Cb_values[i], Ca_values[i] = solution[0], solution[1], solution[2]
     else:
         print(f"Solver did not converge for T = {T}. Message: {mesg}")
     i+=1
-
-
-Cao = 1 #mol/L
-Cbo = 2 #mol/L
-Cco = 0 #mol/L
-V = 10 #L
-Q = 1 #L/s
-tau = V/Q #s
-
-#Parameters to tuning to obtain "aggressive" non-linearity
-Afo = 10e12
-Eaf = 90000 #J/mol
-Aro = 10e10
-Ear = 80000 #J/mol
-R = 8.314 #J/mol
 
 kf_arr = Afo * np.exp(-Eaf/(R*T_values))
 kr_arr = Aro * np.exp(-Ear/(R*T_values))
@@ -117,4 +106,41 @@ plt.ylabel('Concentration (mol/L)')
 plt.title('Original Data')
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()
+plt.tight_layout()
+plt.savefig("Original Data", dpi=200); plt.close()
+
+
+kf = Afo * np.exp(-Eaf/(R*T_values)) #Arrhenius eqn for forward reaction
+kr = Aro * np.exp(-Ear/(R*T_values)) #arrhenius eqn for reverse reaction
+f2 = (Cao - Ca_values
+    - kf * Ca_values * (Cb_values**2) * tau
+    + kr * (Cao - Ca_values + Cbo - Cb_values + Cco) * tau)
+
+plt.figure()
+plt.plot(T_values, f2, marker='.', linestyle='none', label='f(T, Ca, Cb)')
+plt.title("Nonlinear Constraint Values vs Temperature")
+plt.xlabel("Temperature (K)")
+plt.ylabel("nonlinear constraint")
+plt.legend()
+plt.tight_layout()
+plt.savefig("figs/nonlinear_constraint_vs_T.png", dpi=200)
+plt.close()
+
+# print("\n=== Nonlinear Constraint Values ===")
+# for i, T0 in enumerate(T_values):
+#     # print(f"T = {T0:.1f} K")
+#     # print(f"  f(T,Ca,Cb) = {f1[i]:.6e}")
+#     # print("-"*55)
+#     plt.scatter(T0, f2[i], color='blue', label='f(T,Ca,Cb)' if i == 0 else "")
+# plt.title("Nonlinear Constraint Values vs Temperature - prediction")
+# plt.xlabel("Temperature (K)")
+# plt.ylabel("nonlinear constraint")
+# plt.legend()
+# plt.show()
+
+f3 = kf * Cao * (Cbo**2) * tau
+plt.plot(T_values, f3, label='kf * Cao * (Cbo**2) * tau', color='orange')
+# plt.show()
+plt.tight_layout()
+plt.savefig("Data", dpi=200); plt.close()

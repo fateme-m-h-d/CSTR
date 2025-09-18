@@ -54,6 +54,23 @@ def main(args):
 
         args.run = 0
         data = LoadData(args)
+        # import torch
+        # with torch.no_grad():
+        #     Xfull = []
+        #     Yfull = []
+        #     for Xb, Yb in data['test_loader']:
+        #         Xfull.append(Xb); Yfull.append(Yb)
+        #     Xfull = torch.cat(Xfull, 0)
+        #     Yfull = torch.cat(Yfull, 0)
+
+        #     # scaled-space residual on ground-truth labels
+        #     res = data['A'] @ Xfull.T + data['B'] @ Yfull.T - data['b'].repeat(1, Xfull.shape[0])
+        #     print("DEBUG labels residual mean|·|:", res.abs().mean().item(), "max|·|:", res.abs().max().item())
+
+        # from scaler_utils import scaler as sc2
+        # import numpy as np
+        # diff = np.max(np.abs(data['scaler'].scale_ - sc2.scale_))
+        # print("DEBUG scaler max|Δ|:", diff)
         run_training(args, data)
 
     elif args.job == 'experiment':
@@ -69,6 +86,24 @@ def main(args):
                 args.run = 0
                 print(f'\n\nEvaluating {args.model} at run {args.run}')
                 data = LoadData(args)
+                
+                import torch
+                with torch.no_grad():
+                    Xfull = []
+                    Yfull = []
+                    for Xb, Yb in data['test_loader']:
+                        Xfull.append(Xb); Yfull.append(Yb)
+                    Xfull = torch.cat(Xfull, 0)
+                    Yfull = torch.cat(Yfull, 0)
+
+                    # scaled-space residual on ground-truth labels
+                    res = data['A'] @ Xfull.T + data['B'] @ Yfull.T - data['b'].repeat(1, Xfull.shape[0])
+                    print("DEBUG labels residual mean|·|:", res.abs().mean().item(), "max|·|:", res.abs().max().item())
+
+                from scaler_utils import scaler as sc2
+                import numpy as np
+                diff = np.max(np.abs(data['scaler'].scale_ - sc2.scale_))
+                print("DEBUG scaler max|Δ|:", diff)
                 # run_training(args, data)
                 scores = evaluate_model(data, args)
                 print(scores)
