@@ -1,0 +1,55 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+
+
+Evaluating KKThPINN at run 0
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 480, val set size: 160, test set size: 160
+DEBUG labels residual mean|·|: 8.42728812427973e-10 max|·|: 6.519985618069768e-08
+DEBUG scaler max|Δ|: 0.0
+Trying to load model: MODELID_0.2_0.pth
+DEBUG dataset f,g mismatch (should be ~0) mean: 7.67691768131684e-18 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.002822153175356447, 0.0026006800328180683, 0.004015856401465627, 0.00017291653753083523, 0.00017291545189384436]
+DEBUG KKT max|projection delta|: 0.003109168363762349
+DEBUG dataset f,g mismatch (should be ~0) mean: 3.7083389295656453e-17 max: 3.885780586188048e-16
+DEBUG rmse dims: [0.006493344085354579, 0.00639968518109504, 0.009321420368522562, 0.000309175953564597, 0.00030917268346262935]
+DEBUG KKT max|projection delta|: 0.0031352340905844156
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.283650394595801e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.0029835502107494784, 0.0031171030408832768, 0.004725220980899783, 0.00041357227402675687, 0.00041356979166540063]
+DEBUG KKT max|projection delta|: 0.006014686775330791
+DEBUG dataset f,g mismatch (should be ~0) mean: 9.284381300595788e-18 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0032924718186765453, 0.0031081060623728536, 0.004726220732243638, 0.00032962881594183016, 0.00032962618953655265]
+DEBUG KKT max|projection delta|: 0.003104496769373688
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.9367728713937196e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.006736844116890827, 0.006469897274438727, 0.009597897029262817, 0.00019502445716984776, 0.00019502268871925807]
+DEBUG KKT max|projection delta|: 0.0023922553901883914
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.0018234225872058e-17 max: 1.249000902703301e-16
+DEBUG rmse dims: [0.002348940888692258, 0.0021472499803972156, 0.003475830313843489, 0.0003720606941764358, 0.00037205761922786415]
+DEBUG KKT max|projection delta|: 0.003684873238250619
+DEBUG dataset f,g mismatch (should be ~0) mean: 4.637286648644062e-18 max: 4.683753385137379e-17
+DEBUG rmse dims: [0.0023624863108649727, 0.002535188774429388, 0.0037662828166845127, 0.0002225720808860179, 0.0002225697899924328]
+DEBUG KKT max|projection delta|: 0.0031254891367039628
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.9943359976787014e-17 max: 3.191891195797325e-16
+DEBUG rmse dims: [0.0036200089946362675, 0.003581790487534494, 0.00502217091996979, 0.0002696165731388423, 0.0002696140164002836]
+DEBUG KKT max|projection delta|: 0.003119315929782318
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.518251361418904e-18 max: 1.9081958235744878e-17
+DEBUG rmse dims: [0.00353343259066624, 0.0035159152046526096, 0.004934472384946835, 0.00015758754045340793, 0.00015758556731684957]
+DEBUG KKT max|projection delta|: 0.002711712120367221
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.2704632390013801e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.0024372744616716446, 0.0023567880201065643, 0.0037038190264014523, 0.0003697264301598365, 0.0003697235733519222]
+DEBUG KKT max|projection delta|: 0.004917624137701138
+{'rmse_total': 0.011311143730197254, 'rmse_inner': 0.014582855794510996, 'violation': 3.2922331527629466e-12}
+{'rmse_total': 0.011311143730197254, 'rmse_inner': 0.014582855794510996, 'violation': 3.2922331527629466e-12}

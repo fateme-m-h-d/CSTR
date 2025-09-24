@@ -54,7 +54,7 @@ def equations(variables, T):
     eq3=Cc-Cao+Ca-Cbo+Cb
     return [eq1, eq2, eq3]
 
-def get_ground_truth(n=30):
+def get_ground_truth(n=100):
     """
     Uses fsolve to compute Ca, Cb, Cc over a range of T from 280..600 K.
     Returns (T_values, Ca_values, Cb_values, Cc_values).
@@ -284,7 +284,7 @@ def plot_ground_truth(ax):
     """
     Plots the ground truth curves for Ca, Cb, Cc over T=280..600 on the given axes.
     """
-    n = 30
+    n = 100
     T_vals, Ca_vals, Cb_vals, Cc_vals, f, g = get_ground_truth(n=n)
 
     # Plot in dashed lines
@@ -401,7 +401,7 @@ def get_predictions(model_name):
     # model.to(device)
     
     # Define the range of temperatures for prediction (e.g., from 280K to 600K)
-    new_temperatures = np.linspace(280, 600, 30)  # 300 points
+    new_temperatures = np.linspace(280, 600, 100)  # 300 points
     # Make predictions using your make_prediction function
     predictions = make_prediction(model, scaler, new_temperatures)
     

@@ -1,0 +1,49 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+
+
+Evaluating KKThPINN at run 0
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 360, val set size: 120, test set size: 120
+DEBUG labels residual mean|·|: 3.846151214181859e-09 max|·|: 2.3278334992937744e-07
+DEBUG scaler max|Δ|: 0.0
+Trying to load model: MODELID_0.2_0.pth
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.0250511530810018e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.0036319497542731554, 0.0035321561280643025, 0.005454102087375064, 0.0005851509644708861, 0.0005851458229145387]
+DEBUG KKT max|projection delta|: 0.0041714162507151265
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.8133505720485914e-17 max: 3.3306690738754696e-16
+DEBUG rmse dims: [0.0031666725060657953, 0.0028587076577114984, 0.00475963841885909, 0.0013000921091649734, 0.0013000853611305407]
+DEBUG KKT max|projection delta|: 0.020083152807770066
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.7774952483726378e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.002490345272864532, 0.002329242086686002, 0.0038449788778748477, 0.0011901243963884406, 0.0011901177885285659]
+DEBUG KKT max|projection delta|: 0.01774599625542428
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.4869143593275958e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.003995450545682404, 0.0036713358976187805, 0.006065507246719565, 0.0003453110269894361, 0.00034530661016791476]
+DEBUG KKT max|projection delta|: 0.003524089416159004
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.771765290006096e-18 max: 2.7755575615628914e-17
+DEBUG rmse dims: [0.0037474013116512916, 0.003903991582149755, 0.005835771311221054, 0.0008117180048847077, 0.0008117126222817386]
+DEBUG KKT max|projection delta|: 0.011752758472494684
+DEBUG dataset f,g mismatch (should be ~0) mean: 4.4670891649100146e-17 max: 3.469446951953614e-16
+DEBUG rmse dims: [0.005391522164218924, 0.00567608442700618, 0.008237804408781517, 0.0004935494394824959, 0.0004935442527776238]
+DEBUG KKT max|projection delta|: 0.0049795265675558475
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.4319620832551053e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.005521485525123754, 0.005396077568450575, 0.008688405461112953, 0.0007794852536341384, 0.0007794802154380585]
+DEBUG KKT max|projection delta|: 0.01060960483571205
+DEBUG dataset f,g mismatch (should be ~0) mean: 4.6802805500536365e-18 max: 5.551115123125783e-17
+DEBUG rmse dims: [0.00245643295821458, 0.0022726510345680135, 0.003281365748117964, 0.00036427398231038963, 0.00036427074100864136]
+DEBUG KKT max|projection delta|: 0.0039528658093824776
+{'rmse_total': 0.010477422000680236, 'rmse_inner': 0.013397261306387647, 'violation': 2.5764338579259416e-12}
+{'rmse_total': 0.010477422000680236, 'rmse_inner': 0.013397261306387647, 'violation': 2.5764338579259416e-12}

@@ -105,6 +105,8 @@ def load_data(dataset_path):
     with open(scaler_path, 'wb') as f:
         pickle.dump(scaler, f)
     print(f"Scaler saved at {scaler_path}")
+
+
     
     # # Load the scaler from the .pkl file
     # with open(scaler_path, 'rb') as f:

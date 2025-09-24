@@ -1,0 +1,49 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+
+
+Evaluating KKThPINN at run 0
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 360, val set size: 120, test set size: 120
+DEBUG labels residual mean|·|: 3.846151214181859e-09 max|·|: 2.3278334992937744e-07
+DEBUG scaler max|Δ|: 0.0
+Trying to load model: MODELID_0.2_0.pth
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.1989064229288215e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.003950105301362281, 0.004448473719867535, 0.006032091872974379, 0.000249025249539205, 0.00024902351428654295]
+DEBUG KKT max|projection delta|: 0.0030761124800308126
+DEBUG dataset f,g mismatch (should be ~0) mean: 5.899220605398384e-18 max: 5.551115123125783e-17
+DEBUG rmse dims: [0.002334892661160078, 0.002982977608043137, 0.0035871958320705328, 0.00019303548421784237, 0.00019303376929205216]
+DEBUG KKT max|projection delta|: 0.0025321271641212117
+DEBUG dataset f,g mismatch (should be ~0) mean: 4.927874236236479e-17 max: 3.469446951953614e-16
+DEBUG rmse dims: [0.0015569100838196972, 0.001855485141890446, 0.0021560252070955887, 0.00028957699027716, 0.0002895750948782031]
+DEBUG KKT max|projection delta|: 0.0030747467178181553
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.613590885995661e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.002842348398104278, 0.0032150017506238898, 0.004316796256236325, 0.0002621724889118354, 0.00026217049173185347]
+DEBUG KKT max|projection delta|: 0.0030457935161867233
+DEBUG dataset f,g mismatch (should be ~0) mean: 8.373622759616012e-18 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0028323666308169293, 0.003283734110224253, 0.004350487682247003, 0.0002106309392817045, 0.00021062952229426783]
+DEBUG KKT max|projection delta|: 0.003006331718340971
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.0719441163569216e-17 max: 1.5265566588595902e-16
+DEBUG rmse dims: [0.0032100747932278673, 0.003662598536625897, 0.00473131427656576, 0.0002020952196558381, 0.0002020938223519637]
+DEBUG KKT max|projection delta|: 0.002678145485834116
+DEBUG dataset f,g mismatch (should be ~0) mean: 6.5352380367874764e-18 max: 7.632783294297951e-17
+DEBUG rmse dims: [0.0017712334225351498, 0.0020174846077213667, 0.0026015245673791402, 0.00017474832272460113, 0.00017474687047018946]
+DEBUG KKT max|projection delta|: 0.001971402131400346
+DEBUG dataset f,g mismatch (should be ~0) mean: 3.239858671600336e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0004959409206130447, 0.00027858108639470695, 0.0004082272131042301, 0.00030705653158827085, 0.00030705494944087956]
+DEBUG KKT max|projection delta|: 0.002982430990954743
+{'rmse_total': 0.007011238405260223, 'rmse_inner': 0.009034444052770377, 'violation': 4.016370569459582e-12}
+{'rmse_total': 0.007011238405260223, 'rmse_inner': 0.009034444052770377, 'violation': 4.016370569459582e-12}

@@ -1,0 +1,40 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='NN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='train', runs=1, run=0)
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 90, val set size: 30, test set size: 30
+Start Training...
+epoch: 00050 loss_train: 0.29614 loss_val: 0.31784 violation_train: 28614.55859 violation_val: 38557.14483
+epoch: 00100 loss_train: 0.10630 loss_val: 0.12894 violation_train: 3371.02455 violation_val: 4374.41401
+epoch: 00150 loss_train: 0.04989 loss_val: 0.07316 violation_train: 44166.58880 violation_val: 56302.92298
+epoch: 00200 loss_train: 0.04354 loss_val: 0.06908 violation_train: 53993.34875 violation_val: 65767.24197
+epoch: 00250 loss_train: 0.04469 loss_val: 0.06655 violation_train: 45960.64189 violation_val: 62564.52460
+epoch: 00300 loss_train: 0.04316 loss_val: 0.06732 violation_train: 46949.63140 violation_val: 60914.74150
+epoch: 00350 loss_train: 0.04469 loss_val: 0.06454 violation_train: 46967.73202 violation_val: 61157.73577
+epoch: 00400 loss_train: 0.03976 loss_val: 0.06245 violation_train: 41336.30548 violation_val: 58189.63733
+epoch: 00450 loss_train: 0.03943 loss_val: 0.06271 violation_train: 39306.26528 violation_val: 50573.11380
+epoch: 00500 loss_train: 0.03693 loss_val: 0.05710 violation_train: 37874.33617 violation_val: 46949.31052
+epoch: 00550 loss_train: 0.03498 loss_val: 0.05326 violation_train: 30211.99969 violation_val: 42986.56568
+epoch: 00600 loss_train: 0.03225 loss_val: 0.05026 violation_train: 26103.12531 violation_val: 35940.48127
+epoch: 00650 loss_train: 0.02808 loss_val: 0.04585 violation_train: 21354.97601 violation_val: 28908.86660
+epoch: 00700 loss_train: 0.02622 loss_val: 0.04101 violation_train: 14792.24442 violation_val: 19375.74484
+epoch: 00750 loss_train: 0.02251 loss_val: 0.03641 violation_train: 8656.85126 violation_val: 11497.89929
+epoch: 00800 loss_train: 0.02252 loss_val: 0.03318 violation_train: 2864.36027 violation_val: 4029.72472
+epoch: 00850 loss_train: 0.01851 loss_val: 0.02974 violation_train: 2707.24507 violation_val: 3148.93948
+epoch: 00900 loss_train: 0.01691 loss_val: 0.02638 violation_train: 4262.10066 violation_val: 5413.42488
+epoch: 00950 loss_train: 0.01518 loss_val: 0.02581 violation_train: 5688.82642 violation_val: 6971.42010
+epoch: 01000 loss_train: 0.01395 loss_val: 0.02184 violation_train: 5595.70639 violation_val: 6790.52657
+Training Finished!
+Attempting to create directory at: /home/f25moham/CSTR/nonlinear/custom_layers/new1/data/learning_curves/cstr/NN/0.2

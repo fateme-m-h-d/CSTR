@@ -1,0 +1,31 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+
+
+Evaluating KKThPINN at run 0
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 54, val set size: 18, test set size: 18
+DEBUG labels residual mean|·|: 5.897540727378074e-10 max|·|: 1.0521034710109234e-08
+DEBUG scaler max|Δ|: 0.0
+Trying to load model: MODELID_0.2_0.pth
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.1826640020140028e-17 max: 1.8735013540549517e-16
+DEBUG rmse dims: [0.056511963180610456, 0.0708855249964682, 0.09619595172661292, 0.007821546331026582, 0.007821503389596298]
+DEBUG KKT max|projection delta|: 0.04897337302135041
+DEBUG dataset f,g mismatch (should be ~0) mean: 6.437450399132683e-20 max: 1.7618285302889447e-19
+DEBUG rmse dims: [0.07811886014874146, 0.08443576143717474, 0.11977050832678846, 4.678768050169412e-06, 4.3471870812828e-06]
+DEBUG KKT max|projection delta|: 1.3511679220247036e-05
+{'rmse_total': 0.09504872654957836, 'rmse_inner': 0.1225410809353498, 'violation': 2.337956217512982e-12}
+{'rmse_total': 0.09504872654957836, 'rmse_inner': 0.1225410809353498, 'violation': 2.337956217512982e-12}

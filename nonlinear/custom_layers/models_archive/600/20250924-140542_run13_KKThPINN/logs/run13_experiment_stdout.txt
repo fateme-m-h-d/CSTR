@@ -1,0 +1,49 @@
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+Scaler Factors outside function: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=5, z0_inner_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+
+
+Evaluating KKThPINN at run 0
+Scaler Factors: [8.00000000e+02 9.93662502e-01 1.98732500e+00 1.99937889e+00
+ 2.16782835e+04 2.16783502e+04]
+Scaler saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/custom_layers/new1/scaled_data.csv
+type of A: torch.float64, type of B: torch.float64, type of b: torch.float64
+train set size: 360, val set size: 120, test set size: 120
+DEBUG labels residual mean|·|: 3.846151214181859e-09 max|·|: 2.3278334992937744e-07
+DEBUG scaler max|Δ|: 0.0
+Trying to load model: MODELID_0.2_0.pth
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.847400002050833e-17 max: 3.3306690738754696e-16
+DEBUG rmse dims: [0.002482187658542509, 0.0028682028714443713, 0.003825735087954402, 0.0011783781528081922, 0.00117837290001639]
+DEBUG KKT max|projection delta|: 0.015721524222279792
+DEBUG dataset f,g mismatch (should be ~0) mean: 6.344773728729301e-18 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0025223938989037613, 0.0027756262773133023, 0.003997558668581939, 0.0005698107391430073, 0.0005698080163008412]
+DEBUG KKT max|projection delta|: 0.008973911985963534
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.3662103609565295e-17 max: 2.220446049250313e-16
+DEBUG rmse dims: [0.0015553500897819898, 0.0014045813434563304, 0.001948100439920003, 0.0009142997417820882, 0.0009142952458997437]
+DEBUG KKT max|projection delta|: 0.01466500259239345
+DEBUG dataset f,g mismatch (should be ~0) mean: 9.736342634945213e-18 max: 5.898059818321144e-17
+DEBUG rmse dims: [0.0025546144023869876, 0.0023603146307373405, 0.002849842083595188, 0.00022928374458550734, 0.0002292819881756149]
+DEBUG KKT max|projection delta|: 0.0033068032215151644
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.8803372134714584e-17 max: 3.469446951953614e-16
+DEBUG rmse dims: [0.0026443627266290602, 0.002549288612431332, 0.0030203583448935646, 0.0004709904697467789, 0.0004709884702216214]
+DEBUG KKT max|projection delta|: 0.007060471303045213
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.3018027478376852e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0023581352543800525, 0.002172896979639008, 0.0021194329345964576, 0.0009778955613477898, 0.000977890726071943]
+DEBUG KKT max|projection delta|: 0.015682158066039897
+DEBUG dataset f,g mismatch (should be ~0) mean: 1.1863454123737575e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.0019651572661212274, 0.0021790591789836323, 0.0031060217486269903, 0.0003300350905670852, 0.00033003273243741683]
+DEBUG KKT max|projection delta|: 0.005151126874980261
+DEBUG dataset f,g mismatch (should be ~0) mean: 2.645691528881046e-17 max: 1.1102230246251565e-16
+DEBUG rmse dims: [0.002082722243359447, 0.002094536524311575, 0.0029530596666880356, 0.0014516301712970909, 0.0014516228221281898]
+DEBUG KKT max|projection delta|: 0.013698786329241153
+{'rmse_total': 0.005874695187663752, 'rmse_inner': 0.007315923216818029, 'violation': 3.4077289601253113e-12}
+{'rmse_total': 0.005874695187663752, 'rmse_inner': 0.007315923216818029, 'violation': 3.4077289601253113e-12}
