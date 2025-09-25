@@ -1,0 +1,38 @@
+Scaler Factors: [800.           0.9936625    1.987325     1.99937889]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/new1/scaled_data.csv
+Scaler Factors outside function: [800.           0.9936625    1.987325     1.99937889]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [800.           0.9936625    1.987325     1.99937889]
+Namespace(model='NN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='train', runs=1, run=0)
+Scaler Factors: [800.           0.9936625    1.987325     1.99937889]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/new1/scaled_data.csv
+train set size: 120, val set size: 40, test set size: 40
+Dtypes after casting:
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+Start Training…
+epoch: 00050 loss_train: 0.05829 loss_val: 0.06680 viol_train: 11747.30866 viol_val: 12939.45011
+epoch: 00100 loss_train: 0.03378 loss_val: 0.03301 viol_train: 23735.92514 viol_val: 22733.80185
+epoch: 00150 loss_train: 0.02248 loss_val: 0.02333 viol_train: 11449.19944 viol_val: 12092.39866
+epoch: 00200 loss_train: 0.01957 loss_val: 0.02204 viol_train: 2675.89128 viol_val: 2324.49338
+epoch: 00250 loss_train: 0.01360 loss_val: 0.01772 viol_train: 1697.06294 viol_val: 1258.24642
+epoch: 00300 loss_train: 0.01178 loss_val: 0.01300 viol_train: 2669.81060 viol_val: 1954.94397
+epoch: 00350 loss_train: 0.00941 loss_val: 0.01020 viol_train: 3804.05449 viol_val: 3105.95557
+epoch: 00400 loss_train: 0.00834 loss_val: 0.01005 viol_train: 4697.79070 viol_val: 4533.11342
+epoch: 00450 loss_train: 0.00756 loss_val: 0.01066 viol_train: 5225.25654 viol_val: 3590.83492
+epoch: 00500 loss_train: 0.00644 loss_val: 0.00833 viol_train: 5449.13415 viol_val: 4239.38459
+epoch: 00550 loss_train: 0.00549 loss_val: 0.00656 viol_train: 5597.86410 viol_val: 3855.93084
+epoch: 00600 loss_train: 0.00450 loss_val: 0.00611 viol_train: 5902.89968 viol_val: 4372.76599
+epoch: 00650 loss_train: 0.00397 loss_val: 0.00545 viol_train: 5479.22609 viol_val: 4846.58572
+epoch: 00700 loss_train: 0.00333 loss_val: 0.00399 viol_train: 5225.44621 viol_val: 5142.68511
+epoch: 00750 loss_train: 0.00280 loss_val: 0.00345 viol_train: 5199.70148 viol_val: 4481.50512
+epoch: 00800 loss_train: 0.00231 loss_val: 0.00282 viol_train: 4271.71356 viol_val: 2853.00809
+epoch: 00850 loss_train: 0.00196 loss_val: 0.00242 viol_train: 4549.43076 viol_val: 3620.07332
+epoch: 00900 loss_train: 0.00146 loss_val: 0.00186 viol_train: 3698.49461 viol_val: 2778.23082
+epoch: 00950 loss_train: 0.00110 loss_val: 0.00124 viol_train: 3286.33678 viol_val: 2686.61424
+epoch: 01000 loss_train: 0.00091 loss_val: 0.00105 viol_train: 3049.05770 viol_val: 2407.05703
+Training Finished!

@@ -32,7 +32,7 @@ def equations(variables, T):
     return [eq1, eq2, eq3]
 
 # Define the range of T values
-n = 30 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
+n = 200 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
 T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
 
 
@@ -83,7 +83,7 @@ f2 = (Cao - Ca_values
     - kf * Ca_values * (Cb_values**2) * tau
     + kr * (Cao - Ca_values + Cbo - Cb_values + Cco) * tau)
 
-print("\n=== Nonlinear Constraint Values ===")
+# print("\n=== Nonlinear Constraint Values ===")
 for i, T0 in enumerate(T_values):
     # print(f"T = {T0:.1f} K")
     # print(f"  f(T,Ca,Cb) = {f1[i]:.6e}")
@@ -160,11 +160,11 @@ def main():
     })
 
     # Print all rows
-    with pd.option_context("display.float_format", "{:,.12g}".format,
-                           "display.max_rows", None,
-                           "display.max_columns", None,
-                           "display.width", 160):
-        print(results)
+    # with pd.option_context("display.float_format", "{:,.12g}".format,
+    #                        "display.max_rows", None,
+    #                        "display.max_columns", None,
+    #                        "display.width", 160):
+        # print(results)
 
     # Save results (optional)
     results.to_csv("cb_comparison.csv", index=False)

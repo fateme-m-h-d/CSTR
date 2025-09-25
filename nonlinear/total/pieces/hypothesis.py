@@ -5,14 +5,14 @@ from scipy.stats import ttest_rel
 
 def main():
     # Path to your CSV file with columns: Iteration, NN_Error, KKT_Error
-    csv_file_path = r"./experiment_epoch_errors.csv"
+    csv_file_path = r"./results_archive/200/20250925-004521/experiment_epoch_errors.csv"
 
     # Read the CSV file
     df = pd.read_csv(csv_file_path)
 
     # Extract the error columns
-    nn_errors = df["NN_Experiment_Error"].values
-    kkt_errors = df["KKThPINN_Experiment_Error"].values
+    nn_errors = df["NN_Experiment_RMSE"].values
+    kkt_errors = df["KKThPINN_Experiment_RMSE"].values
 
     # Print raw data to verify
     print("Raw NN Errors:", nn_errors)
