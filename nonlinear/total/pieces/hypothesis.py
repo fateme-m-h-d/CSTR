@@ -5,7 +5,7 @@ from scipy.stats import ttest_rel
 
 def main():
     # Path to your CSV file with columns: Iteration, NN_Error, KKT_Error
-    csv_file_path = r"./results_archive/200/20250925-004521/experiment_epoch_errors.csv"
+    csv_file_path = r"./results_archive/30/20250925-033814/experiment_epoch_errors.csv"
 
     # Read the CSV file
     df = pd.read_csv(csv_file_path)

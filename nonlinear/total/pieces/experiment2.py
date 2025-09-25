@@ -72,7 +72,7 @@ def make_archive_dir(num_samples: int, model_name: str, run_idx: int) -> str:
 
 
 # ===== Archive one run (labels folder with ACTUAL rows in new1/data.csv) =====
-def archive_current_run(model_name: str, run_idx: int, train_err, exp_rmse, exp_viol):
+def archive_current_run(model_name: str, run_idx: int, train_err, exp_rmse, exp_viol, exp_viol_nl):
     n_samples_actual = _count_rows(TARGET_DATASET)
     arch_dir  = make_archive_dir(n_samples_actual, model_name, run_idx)
 
@@ -115,6 +115,7 @@ def archive_current_run(model_name: str, run_idx: int, train_err, exp_rmse, exp_
             f"train_error={train_err}\n"
             f"experiment_rmse_total={exp_rmse}\n"
             f"experiment_violation={exp_viol}\n"
+            f"experiment_violation_original_nonlinear={exp_viol_nl}\n"  # NEW
             f"created_utc={pd.Timestamp.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')}\n"
         )
     print(f"[ARCHIVED] {model_name} run {run_idx} => {arch_dir}")
@@ -144,7 +145,7 @@ def equations(variables, T):
     eq3 = Cc - Cao + Ca - Cbo + Cb
     return [eq1, eq2, eq3]
 
-def get_ground_truth(n=400):
+def get_ground_truth(n=30):
     T_values   = np.linspace(280, 600, n)
     Ca_values  = np.ones(n) * Cao
     Cb_values  = np.ones(n) * Cbo
@@ -219,9 +220,11 @@ def run_main(model_name, job, run_idx=None):
 
 def extract_experiment_scores(output):
     """
-    Parse the final printed dict and return {'rmse_total': float|nan, 'violation': float|nan}
+    Parse the final printed dict and return:
+    {'rmse_total': float|nan, 'violation': float|nan,
+     'violation_original_nonlinear': float|nan}
     """
-    rmse_val, viol_val = np.nan, np.nan
+    rmse_val, viol_val, viol_nl_val = np.nan, np.nan, np.nan
     for line in reversed(output.splitlines()):
         s = line.strip()
         if s.startswith("{") and s.endswith("}"):
@@ -229,10 +232,16 @@ def extract_experiment_scores(output):
                 d = ast.literal_eval(s)
                 if "rmse_total" in d: rmse_val = float(d["rmse_total"])
                 if "violation"  in d: viol_val = float(d["violation"])
+                if "violation_original_nonlinear" in d:
+                    viol_nl_val = float(d["violation_original_nonlinear"])
             except Exception:
                 pass
             break
-    return {"rmse_total": rmse_val, "violation": viol_val}
+    return {
+        "rmse_total": rmse_val,
+        "violation": viol_val,
+        "violation_original_nonlinear": viol_nl_val
+    }
 
 def extract_last_epoch_error(output):
     """
@@ -287,6 +296,7 @@ def run_model_experiments(model_name, num_iterations):
     training_errors = []
     experiment_rmse  = []
     experiment_viol  = []
+    experiment_viol_nl = []   # NEW
     
     fig, ax = plt.subplots(figsize=(8, 5))
     plot_ground_truth(ax)
@@ -305,8 +315,11 @@ def run_model_experiments(model_name, num_iterations):
         sc = run_main(model_name, "experiment", run_idx=i+1)
         rmse_val = float(sc.get("rmse_total", np.nan)) if isinstance(sc, dict) else float('nan')
         viol_val = float(sc.get("violation",  np.nan)) if isinstance(sc, dict) else float('nan')
+        viol_nl  = float(sc.get("violation_original_nonlinear", np.nan)) if isinstance(sc, dict) else float('nan')
+
         experiment_rmse.append(rmse_val)
         experiment_viol.append(viol_val)
+        experiment_viol_nl.append(viol_nl)
         
         # predictions for plotting
         X_test, Y_pred = get_predictions(model_name)
@@ -314,7 +327,7 @@ def run_model_experiments(model_name, num_iterations):
             plot_predictions_on_axes(ax, X_test, Y_pred, run_number=i+1, model_name=model_name)
 
         # archive this run (saves model, csvs, code, logs + violation in metadata)
-        archive_current_run(model_name, i+1, train_error, rmse_val, viol_val)
+        archive_current_run(model_name, i+1, train_error, rmse_val, viol_val, viol_nl)
         
         if i < num_iterations - 1:
             clear_folder()
@@ -329,7 +342,8 @@ def run_model_experiments(model_name, num_iterations):
     
     rmse_mean = float(np.nanmean(experiment_rmse)) if len(experiment_rmse) else float('nan')
     viol_mean = float(np.nanmean(experiment_viol)) if len(experiment_viol) else float('nan')
-    return training_errors, experiment_rmse, experiment_viol, rmse_mean, viol_mean
+    viol_nl_mean = float(np.nanmean(experiment_viol_nl)) if experiment_viol_nl else float('nan')
+    return training_errors, experiment_rmse, experiment_viol, experiment_viol_nl, rmse_mean, viol_mean, viol_nl_mean
 
 
 def plot_predictions_on_axes(ax, X, Y_pred, run_number, model_name):
@@ -344,7 +358,7 @@ def plot_predictions_on_axes(ax, X, Y_pred, run_number, model_name):
                 label=f"Run {run_number} {model_name} {labels[i]} (pred)")
 
 def plot_ground_truth(ax):
-    n = 400
+    n = 30
     T_vals, Ca_vals, Cb_vals, Cc_vals = get_ground_truth(n=n)
     ax.plot(T_vals, Ca_vals, 'b--', label='Ground truth Ca')
     ax.plot(T_vals, Cb_vals, 'r--', label='Ground truth Cb')
@@ -427,35 +441,35 @@ def get_predictions(model_name):
     model = load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_dim, A_list, B_list, b_list)
     model = model.double()
 
-    new_temperatures = np.linspace(280, 600, 400)
+    new_temperatures = np.linspace(280, 600, 30)
     predictions = make_prediction(model, scaler, new_temperatures)
     return new_temperatures.reshape(-1, 1), predictions
 
 
 # === Cross-sample master CSV updater (adds columns, never overwrites old sample sizes) ===
-def update_results_by_samples_csv(model_name: str, num_samples: int, rmse_mean: float, viol_mean: float):
+def update_results_by_samples_csv(model_name: str, num_samples: int,
+                                  rmse_mean: float, viol_mean: float, viol_nl_mean: float):
     num_samples = int(num_samples)
     col_rmse = f"{num_samples}_RMSE_TOTAL"
     col_viol = f"{num_samples}_VIOL"
+    col_viol_nl = f"{num_samples}_VIOL_NL"   # NEW
 
     if os.path.exists(RESULTS_MASTER_CSV):
         df = pd.read_csv(RESULTS_MASTER_CSV)
     else:
         df = pd.DataFrame({"Model": ["NN", "KKThPINN"]})
 
-    # ensure rows exist
     for name in ("NN", "KKThPINN"):
         if not (df["Model"] == name).any():
             df = pd.concat([df, pd.DataFrame({"Model": [name]})], ignore_index=True)
 
-    # add columns if new
-    for c in (col_rmse, col_viol):
+    for c in (col_rmse, col_viol, col_viol_nl):   # include new column
         if c not in df.columns:
             df[c] = np.nan
 
-    df.loc[df["Model"].eq(model_name), [col_rmse, col_viol]] = [rmse_mean, viol_mean]
+    df.loc[df["Model"].eq(model_name), [col_rmse, col_viol, col_viol_nl]] = \
+        [rmse_mean, viol_mean, viol_nl_mean]
 
-    # order columns by sample size
     def _key(c):
         if c == "Model": return (-1, "")
         size = int(c.split("_")[0])
@@ -467,6 +481,7 @@ def update_results_by_samples_csv(model_name: str, num_samples: int, rmse_mean: 
     df.to_csv(RESULTS_MASTER_CSV, index=False)
     df.to_csv(results_by_samples_csv_path, index=False)
     print(f"[SUMMARY] Updated master: {RESULTS_MASTER_CSV} | mirror: {results_by_samples_csv_path}")
+
 
 
 def archive_final_csvs():
@@ -491,14 +506,14 @@ def main():
 
     # Run experiments for NN
     print("\n******** Running experiments for NN ********\n")
-    nn_train, nn_rmse, nn_viol, nn_rmse_mean, nn_viol_mean = run_model_experiments("NN", num_iterations)
+    nn_train, nn_rmse, nn_viol, nn_viol_nl, nn_rmse_mean, nn_viol_mean, nn_viol_nl_mean = run_model_experiments("NN", num_iterations)
     
     # Clear folder before next model
     clear_folder()
     
     # Run experiments for KKThPINN (KKT)
     print("\n******** Running experiments for KKThPINN ********\n")
-    kkt_train, kkt_rmse, kkt_viol, kkt_rmse_mean, kkt_viol_mean = run_model_experiments("KKThPINN", num_iterations)
+    kkt_train, kkt_rmse, kkt_viol, kkt_viol_nl, kkt_rmse_mean, kkt_viol_mean, kkt_viol_nl_mean = run_model_experiments("KKThPINN", num_iterations)
     
     # Save per-model combined errors
     pd.DataFrame({
@@ -511,8 +526,10 @@ def main():
     pd.DataFrame({
         "NN_Experiment_RMSE": nn_rmse,
         "NN_Experiment_VIOL": nn_viol,
+        "NN_Experiment_VIOL_NL": nn_viol_nl,           # NEW
         "KKThPINN_Experiment_RMSE": kkt_rmse,
-        "KKThPINN_Experiment_VIOL": kkt_viol
+        "KKThPINN_Experiment_VIOL": kkt_viol,
+        "KKThPINN_Experiment_VIOL_NL": kkt_viol_nl     # NEW
     }).to_csv(experiment_csv_path, index=False)
     print(f"Experiment errors saved at: {experiment_csv_path}")
 
@@ -521,15 +538,16 @@ def main():
     if final_rows <= 0:
         final_rows = _count_rows(SOURCE_DATASET)
 
-    update_results_by_samples_csv("NN",       final_rows, nn_rmse_mean,  nn_viol_mean)
-    update_results_by_samples_csv("KKThPINN", final_rows, kkt_rmse_mean, kkt_viol_mean)
+    update_results_by_samples_csv("NN",       final_rows, nn_rmse_mean,  nn_viol_mean,  nn_viol_nl_mean)
+    update_results_by_samples_csv("KKThPINN", final_rows, kkt_rmse_mean, kkt_viol_mean, kkt_viol_nl_mean)
+
 
     # Snapshot all CSVs to a timestamped folder
     archive_final_csvs()
 
     print("\n=== Cross-sample means ===")
-    print(f"samples={final_rows} | NN:  RMSE_total(mean of {num_iterations})={nn_rmse_mean:.6e},  VIOL(mean)={nn_viol_mean:.6e}")
-    print(f"samples={final_rows} | KKT: RMSE_total(mean of {num_iterations})={kkt_rmse_mean:.6e}, VIOL(mean)={kkt_viol_mean:.6e}")
+    print(f"samples={final_rows} | NN:  RMSE_total(mean of {num_iterations})={nn_rmse_mean:.6e},  VIOL(mean)={nn_viol_mean:.6e}, VIOL_NL(mean)={nn_viol_nl_mean:.6e}")
+    print(f"samples={final_rows} | KKT: RMSE_total(mean of {num_iterations})={kkt_rmse_mean:.6e}, VIOL(mean)={kkt_viol_mean:.6e}, VIOL_NL(mean)={kkt_viol_nl_mean:.6e}")
 
 
 if __name__ == "__main__":

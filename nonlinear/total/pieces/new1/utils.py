@@ -400,3 +400,61 @@ def get_violation(args, data, X, pred, RANGES = [(280/800,300/800),(300/800,340/
     violation = torch.stack(violations, dim=1)
     return violation
 
+
+# --- NEW: original nonlinear violation (per-sample, unscaled space) ---
+
+def compute_violation_original_nonlinear(X_scaled: torch.Tensor,
+                                         Ypred_scaled: torch.Tensor,
+                                         scaler,
+                                         device: str = "cpu") -> torch.Tensor:
+    """
+    Returns |eq1| per sample as a 1D torch tensor (length = batch size),
+    where eq1 = Cao - Ca - kf*Ca*(Cb**2)*tau + kr*(Cao-Ca+Cbo-Cb)*tau,
+    evaluated in ORIGINAL (unscaled) units by inverse-transforming X and Ypred.
+
+    X_scaled:   (batch, 1)   scaled temperature input
+    Ypred_scaled:(batch, D)  scaled model outputs (assumed columns start with Ca, Cb, ...)
+    scaler:     the MaxAbsScaler fitted on [T, Ca, Cb, ...] (your existing scaler)
+    """
+    with torch.no_grad():
+        # Build [T | Y] in scaled space so we can inverse_transform together
+        batch = X_scaled.shape[0]
+        XYs = torch.cat([X_scaled, Ypred_scaled], dim=1).cpu().numpy()  # (batch, 1+D)
+
+        # If the scaler was fit on more columns than (1+D), pad zeros for the unused tail
+        n_features = scaler.n_features_in_
+        if XYs.shape[1] < n_features:
+            pad = np.zeros((batch, n_features - XYs.shape[1]))
+            XYs_full = np.hstack([XYs, pad])
+        else:
+            XYs_full = XYs
+
+        # Back to original units
+        XY = scaler.inverse_transform(XYs_full)
+        T  = XY[:, 0]   # original temperature (K)
+        Ca = XY[:, 1]   # original Ca
+        Cb = XY[:, 2]   # original Cb
+
+        # Kinetic constants (same as in your data/experiment code)
+        Cao = 1.0
+        Cbo = 2.0
+        V   = 10.0
+        Q   = 1.0
+        tau = V / Q
+
+        Afo = 1e13
+        Eaf = 90000.0
+        Aro = 1e11
+        Ear = 80000.0
+        R   = 8.314
+
+        kf = Afo * np.exp(-Eaf / (R * T))
+        kr = Aro * np.exp(-Ear / (R * T))
+
+        # Your eq1 (note: your original had an extra "+" before -kf; kept semantics identical)
+        eq1 = (Cao - Ca) + (-kf * Ca * (Cb ** 2) * tau) + (kr * (Cao - Ca + Cbo - Cb) * tau)
+
+        v = np.abs(eq1).astype(np.float64)  # per-sample absolute residual
+        return torch.from_numpy(v).to(device)
+
+

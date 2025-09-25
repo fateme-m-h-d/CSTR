@@ -234,7 +234,7 @@ if __name__ == "__main__":
         exit(1)
 
     # Make predictions for new temperatures
-    new_temperatures = np.linspace(280, 600, 400) #think about it
+    new_temperatures = np.linspace(280, 600, 30) #think about it
     #new_temperatures=np.array([450, 451])
     predictions = make_prediction(model, scaler, new_temperatures)
     print("Scaler Type:", type(scaler))
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     plt.plot(new_temperatures, Cc_values1, color='g', label="Predicted Cc")
     
     # Define the range of T values
-    n = 400 #number of points
+    n = 30 #number of points
     T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed
 
 

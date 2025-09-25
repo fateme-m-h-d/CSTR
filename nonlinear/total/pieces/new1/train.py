@@ -281,6 +281,8 @@ import os
 import pickle
 import pandas as pd
 
+from utils import compute_violation_original_nonlinear
+
 # run‐time device choice
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 device = "cpu"
@@ -458,6 +460,7 @@ def evaluate_model(data, args):
         # 1) baseline NN RMSE + violation
         rmse_total = 0.0
         violation  = 0.0
+        v_nl_batches = []  # NEW accumulator for original nonlinear violation
         with torch.no_grad():
             for X, Y in data['test_loader']:
                 X, Y = X.to(device), Y.to(device)
@@ -466,11 +469,20 @@ def evaluate_model(data, args):
                                     RANGES = [(280/800,300/800),(300/800,340/800),(340/800,360/800),(360/800,400/800),(400/800,460/800),(460/800,500/800),(500/800,530/800),(530/800,550/800),(550/800,565/800),(565/800,578/800),(578/800,590/800),(590/800,600/800)])
                 rmse_total += loss_func(pred, Y).item()
                 violation  += torch.abs(pred_diff.reshape(-1)).nanmean()
+                
+                # --- NEW: compute per-sample |eq1| in original space, then batch-mean
+                v_nl = compute_violation_original_nonlinear(X, pred, scaler, device=device)  # shape (batch,)
+                v_nl_batches.append(v_nl.mean().item())
 
         rmse_total = np.sqrt(rmse_total / len(data['test_loader']))
         violation  = (violation / len(data['test_loader'])).item()
+        
+        # --- aggregate to a single float like your other metrics ---
+        violation_original_nonlinear = float(np.mean(v_nl_batches))
+        
         scores.update({'rmse_total': float(rmse_total),
-                       'violation': float(violation)})
+                       'violation': float(violation),
+                       'violation_original_nonlinear': violation_original_nonlinear})
 
         # 2) piecewise‐linear post‐processing for pure‐NN case
         if args.model == 'NN':
