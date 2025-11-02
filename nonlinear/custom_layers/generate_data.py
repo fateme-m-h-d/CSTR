@@ -36,7 +36,7 @@ def equations(variables, T):
     return [eq1, eq2, eq3]
 
 # Define the range of T values
-n = 800 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
+n = 1000 #number of points #I'm gonna change this one from 1000 points and decrease it to 600.
 T_values = np.linspace(280, 600, n)  # Adjust the range and number of points as needed         #change this for first half of the nonlinear equation that we have.
 
 
@@ -124,8 +124,8 @@ plt.xlabel("Temperature (K)")
 plt.ylabel("nonlinear constraint")
 plt.legend()
 plt.tight_layout()
-plt.savefig("figs/nonlinear_constraint_vs_T.png", dpi=200)
-plt.close()
+plt.savefig("nonlinear_constraint_vs_T.png", dpi=200)
+# plt.close()
 
 # print("\n=== Nonlinear Constraint Values ===")
 # for i, T0 in enumerate(T_values):

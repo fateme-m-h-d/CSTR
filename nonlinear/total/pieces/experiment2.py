@@ -145,7 +145,7 @@ def equations(variables, T):
     eq3 = Cc - Cao + Ca - Cbo + Cb
     return [eq1, eq2, eq3]
 
-def get_ground_truth(n=30):
+def get_ground_truth(n=600):
     T_values   = np.linspace(280, 600, n)
     Ca_values  = np.ones(n) * Cao
     Cb_values  = np.ones(n) * Cbo
@@ -358,7 +358,7 @@ def plot_predictions_on_axes(ax, X, Y_pred, run_number, model_name):
                 label=f"Run {run_number} {model_name} {labels[i]} (pred)")
 
 def plot_ground_truth(ax):
-    n = 30
+    n = 600
     T_vals, Ca_vals, Cb_vals, Cc_vals = get_ground_truth(n=n)
     ax.plot(T_vals, Ca_vals, 'b--', label='Ground truth Ca')
     ax.plot(T_vals, Cb_vals, 'r--', label='Ground truth Cb')
@@ -441,7 +441,7 @@ def get_predictions(model_name):
     model = load_saved_model(model_path, model_type, input_dim, hidden_dim, hidden_num, z0_dim, A_list, B_list, b_list)
     model = model.double()
 
-    new_temperatures = np.linspace(280, 600, 30)
+    new_temperatures = np.linspace(280, 600, 600)
     predictions = make_prediction(model, scaler, new_temperatures)
     return new_temperatures.reshape(-1, 1), predictions
 
