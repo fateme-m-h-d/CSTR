@@ -16,8 +16,8 @@ HIDDEN_DIM   = 32
 HIDDEN_NUM   = 2
 Z0_DIM       = 3
 DATA_PATH    = "./data.csv"
-TEMPS        = np.linspace(280, 600, 500)  # grid K
-DEVICE       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+TEMPS        = np.linspace(280, 600, 200)  # grid K
+DEVICE       = "cpu"
 
 CSV_SCALED    = "predictions_scaled.csv"
 CSV_UNSCALED  = "predictions_unscaled.csv"
@@ -337,9 +337,10 @@ df_unscaled.to_csv(CSV_UNSCALED, index=False)
 print(f"Saved unscaled predictions & violations → {CSV_UNSCALED}")
 
 # ───────────── PLOT ────────────────────────────────────────
+colors = plt.cm.Set3(np.linspace(0, 1, 12))
 plt.figure(figsize=(9,5))
 for i, v in enumerate(v_scaled_list):
-    plt.scatter(T_unscaled, v, label=f"Region {i+1}: {RANGES[i][0]}–{RANGES[i][1]} K")
+    plt.scatter(T_unscaled, v, color=colors[i], label=f"Region {i+1}: {RANGES[i][0]}–{RANGES[i][1]} K")
 plt.axhline(0, linestyle='--', linewidth=0.8)
 plt.xlabel("Temperature (K)")
 plt.ylabel("Violation  A·X + B·Y − b")
