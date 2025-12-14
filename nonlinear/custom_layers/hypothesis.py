@@ -5,14 +5,15 @@ from scipy.stats import ttest_rel
 
 def main():
     # Path to your CSV file with columns: Iteration, NN_Error, KKT_Error
-    csv_file_path = r"./results_archive/800/20250924-161548/experiment_epoch_errors.csv"
+    # csv_file_path = r"./results_archive/800/20250924-161548/experiment_epoch_errors.csv"
+    csv_file_path = r"./experiment_epoch_errors.csv"
 
     # Read the CSV file
     df = pd.read_csv(csv_file_path)
 
     # Extract the error columns
-    nn_errors = df["NN_Experiment_RMSE"].values
-    kkt_errors = df["KKThPINN_Experiment_RMSE"].values
+    nn_errors = df["NN_Experiment_Error"].values
+    kkt_errors = df["KKThPINN_Experiment_Error"].values
 
     # Print raw data to verify
     print("Raw NN Errors:", nn_errors)
@@ -53,8 +54,8 @@ if __name__ == "__main__":
 import numpy as np, pandas as pd, scipy.stats as st
 
 df = pd.read_csv("experiment_epoch_errors.csv")
-nn  = df["NN_Experiment_RMSE"].dropna().to_numpy()
-kkt = df["KKThPINN_Experiment_RMSE"].dropna().to_numpy()
+nn  = df["NN_Experiment_Error"].dropna().to_numpy()
+kkt = df["KKThPINN_Experiment_Error"].dropna().to_numpy()
 
 t, p = st.ttest_ind(kkt, nn, equal_var=False)  # Welch t-test
 d = (kkt.mean() - nn.mean()) / np.sqrt(0.5*(kkt.var(ddof=1)+nn.var(ddof=1)))

@@ -150,9 +150,9 @@ def run_training(args, data):
             #     pred_dbg = model(X)
             pred = model(X)
             Y_eff = Y[:, :args.z0_inner_dim] if args.model == "NN" else Y
-            append_pred_row_csv("./debug/preds_train_all.csv",
-                                    "train", epoch + 1, batch_idx,
-                                    Y_eff, pred)
+            # append_pred_row_csv("./debug/preds_train_all.csv",
+            #                         "train", epoch + 1, batch_idx,
+            #                         Y_eff, pred)
             # === END APPEND ===
 
             
@@ -264,12 +264,12 @@ def test(model, data, args, current_epoch=None):
     with torch.no_grad():
         for batch_idx, (X, Y) in enumerate(data['val_loader']):
             X, Y = X.to(device), Y.to(device)
-            with torch.no_grad():
-                pred_dbg = model(X)
-                Y_eff_dbg = Y[:, :args.z0_inner_dim] if args.model == "NN" else Y
-                append_pred_row_csv("./debug/preds_val_all.csv",
-                                    "val", (current_epoch or 0), batch_idx,
-                                    Y_eff_dbg, pred_dbg)
+            # with torch.no_grad():
+            #     pred_dbg = model(X)
+            #     Y_eff_dbg = Y[:, :args.z0_inner_dim] if args.model == "NN" else Y
+            #     append_pred_row_csv("./debug/preds_val_all.csv",
+            #                         "val", (current_epoch or 0), batch_idx,
+            #                         Y_eff_dbg, pred_dbg)
             
             pred = model(X)
             
