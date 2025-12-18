@@ -97,13 +97,13 @@ torch.set_default_dtype(torch.float64)
 
 
 # Load the scaler used for normalization
-scaler_path = "./scaler.pkl"  # Adjust this path if needed
-with open(scaler_path, 'rb') as f:
-    scaler = pickle.load(f)
-    print("Scaler loaded successfully.")
-    print("Scaler Type:", type(scaler))
-    if hasattr(scaler, 'scale_'):
-        print("Scaler Factors (scale_):", scaler.scale_)
+# scaler_path = "./scaler.pkl"  # Adjust this path if needed
+# with open(scaler_path, 'rb') as f:
+#     scaler = pickle.load(f)
+#     print("Scaler loaded successfully.")
+#     print("Scaler Type:", type(scaler))
+#     if hasattr(scaler, 'scale_'):
+#         print("Scaler Factors (scale_):", scaler.scale_)
         
 
 def run_training(args, data):
@@ -150,9 +150,9 @@ def run_training(args, data):
             #     pred_dbg = model(X)
             pred = model(X)
             Y_eff = Y[:, :args.z0_inner_dim] if args.model == "NN" else Y
-            # append_pred_row_csv("./debug/preds_train_all.csv",
-            #                         "train", epoch + 1, batch_idx,
-            #                         Y_eff, pred)
+            append_pred_row_csv("./debug/preds_train_all.csv",
+                                    "train", epoch + 1, batch_idx,
+                                    Y_eff, pred)
             # === END APPEND ===
 
             

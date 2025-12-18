@@ -8,6 +8,10 @@ import torch.optim as optim
 from torch.utils import data
 from models import NN, NNOPT
 from sklearn.utils import shuffle
+from models import (
+    Cao, Cbo, Cco,
+    V, Q, Afo, Eaf, Aro, Ear, R
+)
 
 # device = "cuda" if torch.cuda.is_available() else "cpu"    #GPU OR CPU
 device = "cpu"
@@ -52,7 +56,7 @@ def LoadModel(args, data):
         model = NN(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_inner_dim)
     elif args.model == 'KKThPINN':
         model = NNOPT(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_inner_dim, args.z0_dim,
-                      data['A'], data['B'], data['b'])
+                      data['A'], data['B'], data['b'], data['scaler'])
     else:
         raise ValueError('Model not supported!')
 
@@ -99,12 +103,12 @@ def load_data(dataset_path):
 
     dataset = scaler.transform(dataset)
     
-    # Save the scaler to use it later during predictions
-    base_dir = os.getcwd()    #new line of the code. need to change it.
-    scaler_path = os.path.join(base_dir, 'scaler.pkl')
-    with open(scaler_path, 'wb') as f:
-        pickle.dump(scaler, f)
-    print(f"Scaler saved at {scaler_path}")
+    # # Save the scaler to use it later during predictions
+    # base_dir = os.getcwd()    #new line of the code. need to change it.
+    # scaler_path = os.path.join(base_dir, 'scaler.pkl')
+    # with open(scaler_path, 'wb') as f:
+    #     pickle.dump(scaler, f)
+    # print(f"Scaler saved at {scaler_path}")
 
 
     
@@ -133,10 +137,10 @@ def load_data(dataset_path):
     return dataset, scaler
 
 
-# load_data("./data.csv")
-dataset, scaler = load_data("./data.csv")
-# Print scaler factors outside the function
-print("Scaler Factors outside function:", scaler.scale_)
+# # load_data("./data.csv")
+# dataset, scaler = load_data("./data.csv")
+# # Print scaler factors outside the function
+# print("Scaler Factors outside function:", scaler.scale_)
 
 
 def get_ScaleAndMean(scaler, x_dim, z_dim):
@@ -246,41 +250,74 @@ class ALMLoss(nn.Module):
         return mse_loss, lambda_c + mu_c
 
 
+# def get_violation(args, data, X, pred):
+  
+#     violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
+
+#     return violation
+
+tau = V / Q
 def get_violation(args, data, X, pred):
-    # print("A =", data['A'])
-    # print("B =", data['B'])
-    # print("b =", data['b'])
-    # x_dim = data['A'].shape[1]
-    # z_dim = data['B'].shape[1]
-    # xscale, zscale = get_ScaleAndMean(scaler, x_dim, z_dim)
-    
-    # turn lists into arrays
-    # xsc = np.array(xscale)[None, :]            # shape (1, x_dim)
-    # zsc = np.array(zscale)[None, :]            # shape (1, z_dim)
-    
-    # X_unscaled = X.cpu().numpy() * xsc               # element‐wise unscale
-    # z_unscaled = pred.cpu().detach().numpy() * zsc
-    
-    # # X_unscaled = xscale.inverse_transform(X.cpu().numpy())
-    # # z_unscaled = zscale.inverse_transform(pred.cpu().detach().numpy())
+    """
+    Nonlinear steady-state CSTR constraint violation (diagnostic only)
 
-    # # 2) convert back to tensors
-    # X_u = torch.tensor(X_unscaled, device=device, dtype=torch.float32).T   # shape (n_x, N)
-    # z_u = torch.tensor(z_unscaled, device=device, dtype=torch.float32).T   # shape (n_z, N)
-    violation = torch.mm(data['A'], X.T) + torch.mm(data['B'], pred.T) - data['b'].repeat(1, X.T.shape[1])
-    # A1 = torch.tensor([[0]
-    #                             ])  #changed
-    # B1 = torch.tensor([[ 1, 0, 0, -10, +10]
-    #                             ])  #changed
-    # b1 = torch.tensor([1])    #changed
-    
-    # A1, B1, b1 = A1.float(), B1.float(), b1.float()
+    Parameters
+    ----------
+    X    : torch.Tensor, shape [N, 1]
+           Scaled temperature input
+    pred : torch.Tensor, shape [N, 3]
+           Scaled model outputs [Ca, Cb, Cc]
 
-    # # 3) use your ORIGINAL A,B,b
-    # residual = ( A1   @ X_u 
-    #         + B1 @ z_u 
-    #         - b1.repeat(1, X.shape[0]) )
-    # print("max true violation:", residual.abs().max().item())
+    Returns
+    -------
+    violation : torch.Tensor, shape [N, 1]
+                Nonlinear physics residual
+    """
+
+    scaler = data['scaler']
+    
+    # Unscale input
+    
+    T = X[:, 0:1] * scaler.scale_[0]   # [K]
+
+    # Unscale outputs
+
+    Ca = pred[:, 0:1] * scaler.scale_[1]
+    Cb = pred[:, 1:2] * scaler.scale_[2]
+    Cc = pred[:, 2:3] * scaler.scale_[3]
+
+    # Reaction kinetics
+
+    kf = Afo * torch.exp(-Eaf / (R * T))
+    kr = Aro * torch.exp(-Ear / (R * T))
+
+    g = kf * Ca * (Cb ** 2)
+    f = kr * (Cao - Ca + Cbo - Cb + Cco)
+
+    # (same physics as data generation)
+    violation = (Ca - Cao) - f*tau  + g*tau
+    
+    # -------------------------------
+    # scaled violation (should e the same)
+    # -------------------------------
+    # T = X[:, 0:1] * scaler.scale_[0]   # [K]
+
+    
+    # Ca = pred[:, 0:1] * scaler.scale_[1]
+    # Cb = pred[:, 1:2] * scaler.scale_[2]
+    # Cc = pred[:, 2:3] * scaler.scale_[3]
+
+   
+    # kf = Afo * torch.exp(-Eaf / (R * T))
+    # kr = Aro * torch.exp(-Ear / (R * T))
+
+    # g = (kf/scaler.scale_[5]) * Ca * (Cb ** 2)
+    # f = (kr/scaler.scale_[4]) * (Cao - Ca + Cbo - Cb + Cco)
+    
+    # Ca_scaled = pred[:, 0:1]
+    
+    # violation = ((Ca - Cao)) - f*tau*scaler.scale_[4]  + g*tau*scaler.scale_[5]
+    
     return violation
 
 

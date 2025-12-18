@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
-from scaler_utils import scaler
+# from scaler_utils import scaler
 
 
 
@@ -46,8 +46,9 @@ class NN(nn.Module):
 
 
 class NNOPT(nn.Module):
-    def __init__(self, input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b):
+    def __init__(self, input_dim, hidden_dim, hidden_num, z0_inner_dim, z0_dim, A, B, b, scaler):
         super(NNOPT, self).__init__()
+        self.scaler = scaler
         self.A = A                                           # orthogonal projection (satisfying hard linear constriants)
         self.B = B
         self.b = b
@@ -75,7 +76,7 @@ class NNOPT(nn.Module):
     def forward(self, x):
         T_scaled = x                     # shape: [batch, 1]
         # recover original T (MaxAbsScaler: T_scaled = T_orig / max_abs)
-        T = T_scaled * scaler.scale_[0]  # .scale_[0] is the max-abs for the temperature feature
+        T = T_scaled * self.scaler.scale_[0]  # .scale_[0] is the max-abs for the temperature feature
         x0 = x                                             # input               
         for layer in self.layers[:-1]:
             x0 = F.relu(layer(x0))
@@ -83,14 +84,14 @@ class NNOPT(nn.Module):
         
         Ca, Cb, Cc = z0[:, 0:1], z0[:, 1:2], z0[:, 2:3]
         
-        Ca_unscaled = z0[:, 0:1] * scaler.scale_[1]  # unscale Ca
-        Cb_unscaled = z0[:, 1:2] * scaler.scale_[2]
+        Ca_unscaled = z0[:, 0:1] * self.scaler.scale_[1]  # unscale Ca
+        Cb_unscaled = z0[:, 1:2] * self.scaler.scale_[2]
 
         kf = Afo * torch.exp(-Eaf / (R * T))
         kr = Aro * torch.exp(-Ear / (R * T))
 
-        g = (kf / scaler.scale_[5]) * Ca_unscaled * (Cb_unscaled ** 2)
-        f = (kr / scaler.scale_[4]) * (Cao - Ca_unscaled + Cbo - Cb_unscaled + Cco)
+        g = (kf / self.scaler.scale_[5]) * Ca_unscaled * (Cb_unscaled ** 2)
+        f = (kr / self.scaler.scale_[4]) * (Cao - Ca_unscaled + Cbo - Cb_unscaled + Cco)
         
         basis_outputs = torch.cat([Ca, Cb , Cc, f, g], dim=1)
 
