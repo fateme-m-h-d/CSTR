@@ -139,41 +139,41 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# # # --- 1) Load & filter original data to 500 ≤ T ≤ 600 ---
-# # df = pd.read_csv('data.csv')          # expects columns ['T','Ca','Cb',…]
-# # mask = (df['Temperature (T)'] >= 500) & (df['Temperature (T)'] <= 600)
-# # df_range = df.loc[mask, ['Temperature (T)','Ca','Cb']].copy()
+# --- 1) Load & filter original data to 500 ≤ T ≤ 600 ---
+df = pd.read_csv('data.csv')          # expects columns ['T','Ca','Cb',…]
+mask = (df['Temperature (T)'] >= 500) & (df['Temperature (T)'] <= 600)
+df_range = df.loc[mask, ['Temperature (T)','Ca','Cb']].copy()
 
-# # # --- 2) Extract as NumPy arrays and evaluate both functions ---
-# # T_vals  = df_range['Temperature (T)'].values
-# # Ca_vals = df_range['Ca'].values
-# # Cb_vals = df_range['Cb'].values
+# --- 2) Extract as NumPy arrays and evaluate both functions ---
+T_vals  = df_range['Temperature (T)'].values
+Ca_vals = df_range['Ca'].values
+Cb_vals = df_range['Cb'].values
 
-# # res_nl  = f_nl_func(Ca_vals, Cb_vals, T_vals)
-# # res_lin = f_lin_func(Ca_vals, Cb_vals, T_vals)
+res_nl  = f_nl_func(Ca_vals, Cb_vals, T_vals)
+res_lin = f_lin_func(Ca_vals, Cb_vals, T_vals)
 
-# # # --- 3) Attach results to the DataFrame & print ---
-# # df_range['residual_nonlinear']  = res_nl
-# # df_range['residual_linearized'] = res_lin
+# --- 3) Attach results to the DataFrame & print ---
+df_range['residual_nonlinear']  = res_nl
+df_range['residual_linearized'] = res_lin
 
-# # # Print the inputs and both outputs
-# # print(df_range.to_string(index=False))
+# Print the inputs and both outputs
+print(df_range.to_string(index=False))
 
-# # # (Optional) save to CSV
-# # df_range.to_csv('residual_comparison_500_600.csv', index=False)
-# # print("\nWrote residual_comparison_500_600.csv")
+# (Optional) save to CSV
+df_range.to_csv('residual_comparison_500_600.csv', index=False)
+print("\nWrote residual_comparison_500_600.csv")
 
-# # # --- 4) Plot the two curves over T ∈ [500,600] ---
-# # plt.figure(figsize=(6,4))
-# # plt.plot(df_range['Temperature (T)'], df_range['residual_nonlinear'],
-# #          'o', label='Nonlinear residual')
-# # plt.plot(df_range['Temperature (T)'], df_range['residual_linearized'],
-# #          'x', label='Linearized residual')
-# # plt.axhline(0, color='gray', lw=0.5)
-# # plt.xlabel('Temperature, T (K)')
-# # plt.ylabel('Residual f(Ca, Cb, T)')
-# # plt.title('Residuals on Original Data (500–600 K)')
-# # plt.legend()
-# # plt.tight_layout()
-# # plt.show()
+# --- 4) Plot the two curves over T ∈ [500,600] ---
+plt.figure(figsize=(6,4))
+plt.plot(df_range['Temperature (T)'], df_range['residual_nonlinear'],
+         'o', label='Nonlinear residual')
+plt.plot(df_range['Temperature (T)'], df_range['residual_linearized'],
+         'x', label='Linearized residual')
+plt.axhline(0, color='gray', lw=0.5)
+plt.xlabel('Temperature, T (K)')
+plt.ylabel('Residual f(Ca, Cb, T)')
+plt.title('Residuals on Original Data (500–600 K)')
+plt.legend()
+plt.tight_layout()
+plt.show()
 

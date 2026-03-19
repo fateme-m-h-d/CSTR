@@ -23,7 +23,7 @@ def add_arguments():
     parser.add_argument('--optimizer', type=str, default='adam')
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--lr', type=float, default=1e-4) #changed
+    parser.add_argument('--lr', type=float, default=5e-6) #changed
     parser.add_argument('--mu', type=float, default=1)
     parser.add_argument("--max_subiter", default=500, type=int)
     parser.add_argument("--eta", default=0.8, type=float)
@@ -96,14 +96,14 @@ def main(args):
                     Xfull = torch.cat(Xfull, 0)
                     Yfull = torch.cat(Yfull, 0)
 
-                    # scaled-space residual on ground-truth labels
-                    res = data['A'] @ Xfull.T + data['B'] @ Yfull.T - data['b'].repeat(1, Xfull.shape[0])
-                    print("DEBUG labels residual mean|·|:", res.abs().mean().item(), "max|·|:", res.abs().max().item())
+                    # # scaled-space residual on ground-truth labels
+                    # res = data['A'] @ Xfull.T + data['B'] @ Yfull.T - data['b'].repeat(1, Xfull.shape[0])
+                    # print("DEBUG labels residual mean|·|:", res.abs().mean().item(), "max|·|:", res.abs().max().item())
 
-                from scaler_utils import scaler as sc2
-                import numpy as np
-                diff = np.max(np.abs(data['scaler'].scale_ - sc2.scale_))
-                print("DEBUG scaler max|Δ|:", diff)
+                # from scaler_utils import scaler as sc2
+                # import numpy as np
+                # diff = np.max(np.abs(data['scaler'].scale_ - sc2.scale_))
+                # print("DEBUG scaler max|Δ|:", diff)
                 # run_training(args, data)
                 scores = evaluate_model(data, args)
                 print(scores)

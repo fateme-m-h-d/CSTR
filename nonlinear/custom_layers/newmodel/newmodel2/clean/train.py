@@ -140,7 +140,7 @@ def run_training(args, data):
     model = LoadModel(args, data)
     optimizer = get_optimizer(args, model)
     loss_func = get_loss_func(args, data)
-    
+
     # Call save function here after loading the data
     # save_training_data(data['train_loader'], "training_data.csv")
     
@@ -240,6 +240,7 @@ def optimizer_step(model, optimizer, loss_func, X, Y, args, data, lambda_k=None,
     
         loss = loss_func(pred3, Y_eff)
         loss.backward()
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0)
         optimizer.step()
         return loss.item()
     
@@ -251,7 +252,7 @@ def conservation_step(model, X, data, args):
     # if args.model == 'NN':
     #     pred = _augment_with_fg_from_nn(X, pred, data, args)
     # pred_diff = get_violation(args, data, X, pred)
-    pred_for_violation = pred5             # always 5-dim (Ca, Cb, Cc, f, g)
+    pred_for_violation = pred3             # always 5-dim (Ca, Cb, Cc, f, g)
     pred_diff = get_violation(args, data, X, pred_for_violation)
     return pred_diff
 
@@ -295,7 +296,7 @@ def test(model, data, args, current_epoch=None):
             # else:
             #     pred_for_violation = pred
             # 5-dim output for violation
-            pred_for_violation = pred5
+            pred_for_violation = pred3
             pred_diff = get_violation(args, data, X, pred_for_violation)
             
             pred_diff = get_violation(args, data, X, pred_for_violation)
@@ -353,7 +354,7 @@ def evaluate_model(data, args):
             for batch_idx, (X, Y) in enumerate(data['test_loader']):
                 X, Y = X.to(device), Y.to(device)
                 # pred = model(X)           # NN: [N,3], KKT: [N,5]
-                pred3, pred5 = forward_kkt_style(model, X, args, data)
+                pred3, pred5, predhat = forward_kkt_style(model, X, args, data)
                 
                 
     # Recompute f,g from the *labels* Ca,Cb,Cc using your existing function
@@ -399,7 +400,7 @@ def evaluate_model(data, args):
                 # loss = loss_func(pred, Y_eff)
                 
                 # 5-dim for violation
-                pred_for_violation = pred5
+                pred_for_violation = pred3
                 pred_diff = get_violation(args, data, X, pred_for_violation)
 
                 Y_eff = Y[:, :args.z0_inner_dim]

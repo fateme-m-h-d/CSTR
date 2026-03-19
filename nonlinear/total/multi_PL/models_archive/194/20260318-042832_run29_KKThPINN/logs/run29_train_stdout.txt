@@ -1,0 +1,39 @@
+Using device: cpu
+Scaler Factors: [460.           1.20000005   1.19241403   1.98983454   1.95362956]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/multi_PL/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/multi_PL/new1/scaled_data.csv
+Scaler Factors outside function: [460.           1.20000005   1.19241403   1.98983454   1.95362956]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [460.           1.20000005   1.19241403   1.98983454   1.95362956]
+Namespace(model='KKThPINN', model_id='MODELID', input_dim=2, hidden_dim=32, hidden_num=2, z0_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=32, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='train', runs=1, run=0)
+Scaler Factors: [460.           1.20000005   1.19241403   1.98983454   1.95362956]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/multi_PL/new1/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/multi_PL/new1/scaled_data.csv
+train set size: 118, val set size: 38, test set size: 38
+Dtypes after casting:
+[torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32]
+[torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32]
+[torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32, torch.float32]
+Start Training…
+epoch: 00050 loss_train: 0.07844 loss_val: 0.06271 viol_train: 0.11669 viol_val: 0.09302
+epoch: 00100 loss_train: 0.03916 loss_val: 0.03625 viol_train: 0.05279 viol_val: 0.04471
+epoch: 00150 loss_train: 0.02844 loss_val: 0.02109 viol_train: 0.03582 viol_val: 0.08428
+epoch: 00200 loss_train: 0.02690 loss_val: 0.02318 viol_train: 0.04639 viol_val: 0.09647
+epoch: 00250 loss_train: 0.02396 loss_val: 0.01852 viol_train: 0.04747 viol_val: 0.07513
+epoch: 00300 loss_train: 0.02285 loss_val: 0.01536 viol_train: 0.05205 viol_val: 0.09143
+epoch: 00350 loss_train: 0.01725 loss_val: 0.01593 viol_train: 0.04884 viol_val: 0.09049
+epoch: 00400 loss_train: 0.01422 loss_val: 0.01181 viol_train: 0.04985 viol_val: 0.14479
+epoch: 00450 loss_train: 0.01061 loss_val: 0.01089 viol_train: 0.04894 viol_val: 0.10410
+epoch: 00500 loss_train: 0.00853 loss_val: 0.00910 viol_train: 0.05046 viol_val: 0.07888
+epoch: 00550 loss_train: 0.00743 loss_val: 0.00783 viol_train: 0.05174 viol_val: 0.10829
+epoch: 00600 loss_train: 0.00630 loss_val: 0.00685 viol_train: 0.05402 viol_val: 0.08089
+epoch: 00650 loss_train: 0.00529 loss_val: 0.00733 viol_train: 0.06524 viol_val: 0.08238
+epoch: 00700 loss_train: 0.00483 loss_val: 0.00604 viol_train: 0.05216 viol_val: 0.11054
+epoch: 00750 loss_train: 0.00435 loss_val: 0.00553 viol_train: 0.05554 viol_val: 0.08460
+epoch: 00800 loss_train: 0.00400 loss_val: 0.00527 viol_train: 0.05985 viol_val: 0.07997
+epoch: 00850 loss_train: 0.00386 loss_val: 0.00512 viol_train: 0.06433 viol_val: 0.08106
+epoch: 00900 loss_train: 0.00371 loss_val: 0.00508 viol_train: 0.05303 viol_val: 0.07910
+epoch: 00950 loss_train: 0.00348 loss_val: 0.00485 viol_train: 0.07179 viol_val: 0.10427
+epoch: 01000 loss_train: 0.00315 loss_val: 0.00466 viol_train: 0.04991 viol_val: 0.07530
+Training Finished!
