@@ -68,10 +68,10 @@ def LoadData(args):
         B_list = [B_i.double() for B_i in B_list]
         b_list = [b_i.double() for b_i in b_list]
     # Debug check
-    print("Dtypes after casting:")
-    print([A_i.dtype for A_i in A_list])
-    print([B_i.dtype for B_i in B_list])
-    print([b_i.dtype for b_i in b_list])
+    # print("Dtypes after casting:")
+    # print([A_i.dtype for A_i in A_list])
+    # print([B_i.dtype for B_i in B_list])
+    # print([b_i.dtype for b_i in b_list])
 
 
     data_dict = {'train_loader': train_loader, 'val_loader': val_loader, 'test_loader': test_loader,
