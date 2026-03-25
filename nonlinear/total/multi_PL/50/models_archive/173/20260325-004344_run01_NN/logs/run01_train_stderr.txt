@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/home/f25moham/CSTR/nonlinear/total/multi_PL/50/new1/main.py", line 1, in <module>
+    from utils import LoadData
+  File "/home/f25moham/CSTR/nonlinear/total/multi_PL/50/new1/utils.py", line 169, in <module>
+    dataset, scaler = load_data("./data.csv")
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/f25moham/CSTR/nonlinear/total/multi_PL/50/new1/utils.py", line 126, in load_data
+    dataset = np.array(pd.read_csv(dataset_path).values)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/f25moham/CSTR/myenv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/f25moham/CSTR/myenv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/f25moham/CSTR/myenv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/f25moham/CSTR/myenv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/home/f25moham/CSTR/myenv/lib/python3.12/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+             ^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './data.csv'
