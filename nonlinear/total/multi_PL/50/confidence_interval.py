@@ -33,8 +33,8 @@ for n in SCENARIOS:
     kkt_rmse_ci.append((kkt_ci.high - kkt_ci.low) / 2)
 
     # ----- Violation -----
-    nn = df["NN_Experiment_VIOL"].dropna().to_numpy()
-    kkt = df["KKThPINN_Experiment_VIOL"].dropna().to_numpy()
+    nn = df["NN_Experiment_VIOL_NL"].dropna().to_numpy()
+    kkt = df["KKThPINN_Experiment_VIOL_NL"].dropna().to_numpy()
 
     nn_ci = ttest_1samp(nn, popmean=0).confidence_interval(0.95)
     kkt_ci = ttest_1samp(kkt, popmean=0).confidence_interval(0.95)
@@ -75,8 +75,8 @@ nn_rmse_ci.append((nn_ci.high - nn_ci.low) / 2)
 kkt_rmse_ci.append((kkt_ci.high - kkt_ci.low) / 2)
 
 # Violation
-nn = df["NN_Experiment_VIOL"].dropna().to_numpy()
-kkt = df["KKThPINN_Experiment_VIOL"].dropna().to_numpy()
+nn = df["NN_Experiment_VIOL_NL"].dropna().to_numpy()
+kkt = df["KKThPINN_Experiment_VIOL_NL"].dropna().to_numpy()
 
 nn_ci = ttest_1samp(nn, popmean=0).confidence_interval(0.95)
 kkt_ci = ttest_1samp(kkt, popmean=0).confidence_interval(0.95)

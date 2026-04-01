@@ -33,7 +33,7 @@ XTOL = 1e-11
 # ============================================================
 # 1) REGION DEFINITION (you choose these)
 # ============================================================
-Tmin, Tmax   = 280.0, 480.0
+Tmin,    = 280.0, 460.0
 Caomin, Caomax = 0.8, 1.2
 
 # How many extra random interior points per region
