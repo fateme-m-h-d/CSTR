@@ -286,7 +286,7 @@ from utils import compute_violation_original_nonlinear
 # run‐time device choice
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 device = "cpu"
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.float32)
 
 # Load the scaler used for normalization
 scaler_path = "./scaler.pkl"  # adjust if needed

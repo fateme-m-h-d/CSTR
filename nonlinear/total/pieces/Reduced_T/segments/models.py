@@ -72,16 +72,20 @@ class NNOPT(nn.Module):
         """Return a list of masks, one per region. Shape of each: (batch, 1)."""
         masks = []
         n = len(self.fc1_list)
+        
+        if n == 1:
+            return torch.ones((x.shape[0], 1), dtype=x.dtype, device=x.device)
+        
+        transition_points = self.T_edges[1:-1]
+        
         for i in range(n):
-            if transition_points is None:
-                mask = 1.0        # no gating
-            else:                 # same mask logic you used before
-                if i == 0:
-                    mask = 1.0 - self.custom_sigmoid(x, transition_points[0], steepness)
-                elif i == len(self.fc1_list)-1:
-                    mask = self.custom_sigmoid(x, transition_points[-1], steepness)
-                else:
-                    mask = (self.custom_sigmoid(x, transition_points[i-1], steepness) *
+            
+            if i == 0:
+                mask = 1.0 - self.custom_sigmoid(x, transition_points[0], steepness)
+            elif i == len(self.fc1_list)-1:
+                mask = self.custom_sigmoid(x, transition_points[-1], steepness)
+            else:
+                mask = (self.custom_sigmoid(x, transition_points[i-1], steepness) *
                         (1.0 - self.custom_sigmoid(x, transition_points[i], steepness)))
             masks.append(mask)
         return torch.cat(masks, dim=1)
@@ -90,25 +94,15 @@ class NNOPT(nn.Module):
         x0 = x                                             # input               
         for layer in self.layers[:-1]:
             x0 = F.relu(layer(x0))
-        z0 = self.layers[-1](x0) 
+        z0 = self.layers[-1](x0)
         
-        # transition points are the INTERNAL scaled edges
-        transition_points = self.T_edges[1:-1]
+        masks = self.get_masks(x, steepness=steepness)
         
         # fixed branches masked by their sigmoids
         fixed_outputs = []
         for i, (fc1, fc2) in enumerate(zip(self.fc1_list, self.fc2_list)):
             z_fixed = fc1(z0) + fc2(x)
-            if transition_points is None:
-                mask = 1.0        # no gating
-            else:                 # same mask logic you used before
-                if i == 0:
-                    mask = 1.0 - self.custom_sigmoid(x, transition_points[0], steepness)
-                elif i == len(self.fc1_list)-1:
-                    mask = self.custom_sigmoid(x, transition_points[-1], steepness)
-                else:
-                    mask = (self.custom_sigmoid(x, transition_points[i-1], steepness) *
-                        (1.0 - self.custom_sigmoid(x, transition_points[i], steepness)))
+            mask = masks[:, i:i+1]
             fixed_outputs.append(z_fixed * mask)
         return sum(fixed_outputs)
         

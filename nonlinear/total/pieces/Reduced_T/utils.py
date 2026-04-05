@@ -363,7 +363,7 @@ def compute_violation_original_nonlinear(X_scaled: torch.Tensor,
         # Your eq1 (note: your original had an extra "+" before -kf; kept semantics identical)
         eq1 = (Cao - Ca) + (-kf * Ca * (Cb ** 2) * tau) + (kr * (Cao - Ca + Cbo - Cb) * tau)
 
-        v = np.abs(eq1).astype(np.float64)  # per-sample absolute residual
+        v = np.abs(eq1).astype(np.float32)  # per-sample absolute residual
         return torch.from_numpy(v).to(device)
 
 

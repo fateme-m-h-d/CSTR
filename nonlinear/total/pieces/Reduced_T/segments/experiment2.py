@@ -19,7 +19,7 @@ target_folder = os.path.join(base_dir, "new1")
 os.makedirs(target_folder, exist_ok=True)
 
 # List of source files to be copied into the folder
-files_to_copy = ["main.py", "train.py", "models.py", "utils.py", "generate_data.py", "linearization.py", "data.csv", "ABb_matrices.csv"]
+files_to_copy = ["main.py", "train.py", "models.py", "utils.py", "generate_data.py", "linearization.py", "data.csv", "ABb_matrices.csv", "region_edges.npz"]
 
 # CSV file paths (working copies in project root)
 training_csv_path   = os.path.join(base_dir, "training_epoch_errors.csv")

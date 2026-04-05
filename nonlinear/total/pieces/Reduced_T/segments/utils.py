@@ -12,16 +12,20 @@ from sklearn.utils import shuffle
 # device = "cuda" if torch.cuda.is_available() else "cpu"    #GPU OR CPU
 device = "cpu"
 
-T_EDGES_RAW = np.array([280, 300, 340, 360, 400, 420, 440, 460], dtype=np.float32)
+def load_region_edges(npz_path="region_edges.npz"):
+    arr = np.load(npz_path)
+    return arr["T_edges"].astype(float)
 
 def LoadData(args):
     if args.dataset_type == 'cstr':
         dataset_arr, scaler = load_data(args.dataset_path)
-        Data_class = Data_cstr
         
-        # 1D
-        T_edges = T_EDGES_RAW / scaler.scale_[0]
+        T_edges_raw = load_region_edges("region_edges.npz")
+        T_edges = T_edges_raw / scaler.scale_[0]   # feature 0 = T
+
         n_regions = len(T_edges) - 1
+    
+        Data_class = Data_cstr    
     else:
         raise ValueError('Dataset not supported!')
 
@@ -283,34 +287,81 @@ class ALMLoss(nn.Module):
         mu_c = mu_k / 2 * c.pow(2).mean()
         return mse_loss, lambda_c + mu_c
 
-def get_violation(args, data, X, pred):
+# def get_violation(args, data, X, pred):
+#     A_list, B_list, b_list = data['A_list'], data['B_list'], data['b_list']
+#     T_edges = torch.as_tensor(data['T_edges'], dtype=X.dtype, device=X.device)
+
+#     x1d = X[:, 0]
+#     violations = []
+#     N = len(x1d)
+
+#     for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
+#         Ai = Ai.to(dtype=X.dtype, device=X.device)
+#         Bi = Bi.to(dtype=X.dtype, device=X.device)
+#         bi = bi.to(dtype=X.dtype, device=X.device)
+
+#         lo = T_edges[i]
+#         hi = T_edges[i + 1]
+
+#         if i < len(A_list) - 1:
+#             mask = (x1d >= lo) & (x1d < hi)
+#         else:
+#             mask = (x1d >= lo) & (x1d <= hi)
+
+#         v = (X @ Ai.T + pred @ Bi.T - bi).flatten()
+
+#         v_region = torch.full((N,), float('nan'), dtype=X.dtype, device=X.device)
+#         v_region[mask] = v[mask]
+#         violations.append(v_region)
+
+#     return torch.stack(violations, dim=1)
+
+def custom_sigmoid(x, transition_point, steepness):
+    transition_width = 100.0 / steepness
+    w = (x - transition_point) / transition_width
+    return torch.sigmoid(w)
+
+def get_masks_1d(X, T_edges, steepT=8e5):
+    nT = len(T_edges) - 1
+
+    if nT == 1:
+        return torch.ones((X.shape[0], 1), dtype=X.dtype, device=X.device)
+
+    transition_points = T_edges[1:-1]
+    masks = []
+
+    for i in range(nT):
+        if i == 0:
+            mask = 1.0 - custom_sigmoid(X, transition_points[0], steepT)
+        elif i == nT - 1:
+            mask = custom_sigmoid(X, transition_points[-1], steepT)
+        else:
+            mask = (
+                custom_sigmoid(X, transition_points[i - 1], steepT)
+                * (1.0 - custom_sigmoid(X, transition_points[i], steepT))
+            )
+        masks.append(mask)
+
+    return torch.cat(masks, dim=1)
+
+
+def get_violation(args, data, X, pred, steepT=8e5):
     A_list, B_list, b_list = data['A_list'], data['B_list'], data['b_list']
     T_edges = torch.as_tensor(data['T_edges'], dtype=X.dtype, device=X.device)
 
-    x1d = X[:, 0]
-    violations = []
-    N = len(x1d)
+    masks = get_masks_1d(X, T_edges, steepT=steepT)
 
-    for i, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
+    violations = []
+    for r, (Ai, Bi, bi) in enumerate(zip(A_list, B_list, b_list)):
         Ai = Ai.to(dtype=X.dtype, device=X.device)
         Bi = Bi.to(dtype=X.dtype, device=X.device)
         bi = bi.to(dtype=X.dtype, device=X.device)
 
-        lo = T_edges[i]
-        hi = T_edges[i + 1]
+        v = (X @ Ai.T + pred @ Bi.T - bi)      # (batch, 1)
+        v = v * masks[:, r:r+1]                # soft masked contribution
+        violations.append(v)
 
-        if i < len(A_list) - 1:
-            mask = (x1d >= lo) & (x1d < hi)
-        else:
-            mask = (x1d >= lo) & (x1d <= hi)
-
-        v = (X @ Ai.T + pred @ Bi.T - bi).flatten()
-
-        v_region = torch.full((N,), float('nan'), dtype=X.dtype, device=X.device)
-        v_region[mask] = v[mask]
-        violations.append(v_region)
-
-    return torch.stack(violations, dim=1)
+    return torch.cat(violations, dim=1)
 
 def compute_violation_original_nonlinear(X_scaled: torch.Tensor,
                                          Ypred_scaled: torch.Tensor,
@@ -363,7 +414,7 @@ def compute_violation_original_nonlinear(X_scaled: torch.Tensor,
         # Your eq1 (note: your original had an extra "+" before -kf; kept semantics identical)
         eq1 = (Cao - Ca) + (-kf * Ca * (Cb ** 2) * tau) + (kr * (Cao - Ca + Cbo - Cb) * tau)
 
-        v = np.abs(eq1).astype(np.float64)  # per-sample absolute residual
+        v = np.abs(eq1).astype(np.float32)  # per-sample absolute residual
         return torch.from_numpy(v).to(device)
 
 

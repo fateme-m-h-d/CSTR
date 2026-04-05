@@ -286,7 +286,7 @@ from utils import compute_violation_original_nonlinear
 # run‐time device choice
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 device = "cpu"
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.float32)
 
 # Load the scaler used for normalization
 scaler_path = "./scaler.pkl"  # adjust if needed
@@ -318,7 +318,7 @@ def run_training(args, data):
             mse = optimizer_step(model, optimizer, loss_func, X, Y, args, data)
             pred_diff = conservation_step(model, X, data, args)
             train_loss      += mse
-            train_violation += torch.abs(pred_diff.reshape(-1)).nanmean()   # ← CHANGED
+            train_violation += torch.abs(pred_diff).sum(dim=1).mean()   # ← CHANGED
 
         train_loss      /= len(data['train_loader'])
         train_violation /= len(data['train_loader'])
@@ -429,7 +429,8 @@ def test(model, data, args):
             else:  # MSE
                 test_loss += loss_func(pred, Y).item()
 
-            test_violation += torch.abs(pred_diff.reshape(-1)).nanmean()
+            # test_violation += torch.abs(pred_diff.reshape(-1)).nanmean()
+            test_violation += torch.abs(pred_diff).sum(dim=1).mean()
 
     test_loss      /= len(data['val_loader'])
     test_violation /= len(data['val_loader'])
@@ -466,7 +467,8 @@ def evaluate_model(data, args):
                 pred = model(X)
                 pred_diff = get_violation(args, data, X, pred)
                 rmse_total += loss_func(pred, Y).item()
-                violation  += torch.abs(pred_diff.reshape(-1)).nanmean()
+                # violation  += torch.abs(pred_diff.reshape(-1)).nanmean()
+                violation += torch.abs(pred_diff).sum(dim=1).mean()
                 
                 # --- NEW: compute per-sample |eq1| in original space, then batch-mean
                 v_nl = compute_violation_original_nonlinear(X, pred, scaler, device=device)  # shape (batch,)
@@ -483,54 +485,54 @@ def evaluate_model(data, args):
                        'violation_original_nonlinear': violation_original_nonlinear})
 
         # 2) piecewise‐linear post‐processing for pure‐NN case
-        if args.model == 'NN':
-            post_rmse = 0.0
+        # if args.model == 'NN':
+        #     post_rmse = 0.0
 
-            # grab your lists from the data dict:
-            A_list = data['A_list']
-            B_list = data['B_list']
-            b_list = data['b_list']
-            z0 = args.z0_dim
+        #     # grab your lists from the data dict:
+        #     A_list = data['A_list']
+        #     B_list = data['B_list']
+        #     b_list = data['b_list']
+        #     z0 = args.z0_dim
 
-            with torch.no_grad():
-                for X, Y in data['test_loader']:
-                    X, Y = X.to(device), Y.to(device)
-                    z_nn = model(X)  # network latent output
+        #     with torch.no_grad():
+        #         for X, Y in data['test_loader']:
+        #             X, Y = X.to(device), Y.to(device)
+        #             z_nn = model(X)  # network latent output
 
-                    region_outs = []
-                    for Ai, Bi, bi in zip(A_list, B_list, b_list):
-                        # projector chunk = Bᵀ (B Bᵀ)⁻¹
-                        chunk = Bi.t() @ torch.inverse(Bi @ Bi.t())
-                        Astar = -chunk @ Ai
-                        Bstar = torch.eye(z0, device=device) - chunk @ Bi
-                        bstar = (chunk @ bi.view(-1,1)).squeeze(-1)
+        #             region_outs = []
+        #             for Ai, Bi, bi in zip(A_list, B_list, b_list):
+        #                 # projector chunk = Bᵀ (B Bᵀ)⁻¹
+        #                 chunk = Bi.t() @ torch.inverse(Bi @ Bi.t())
+        #                 Astar = -chunk @ Ai
+        #                 Bstar = torch.eye(z0, device=device) - chunk @ Bi
+        #                 bstar = (chunk @ bi.view(-1,1)).squeeze(-1)
 
-                        # local linear prediction
-                        lin = X @ Astar.T + z_nn @ Bstar.T \
-                              + torch.ones((X.size(0),1), device=device) \
-                                @ bstar.unsqueeze(0)
+        #                 # local linear prediction
+        #                 lin = X @ Astar.T + z_nn @ Bstar.T \
+        #                       + torch.ones((X.size(0),1), device=device) \
+        #                         @ bstar.unsqueeze(0)
 
-                        # apply same sigmoid masks:
-                        def σ(x, t, s=800000):
-                            w = (x - t) / (100/s)
-                            return torch.sigmoid(w)
+        #                 # apply same sigmoid masks:
+        #                 def σ(x, t, s=800000):
+        #                     w = (x - t) / (100/s)
+        #                     return torch.sigmoid(w)
                         
-                        tp = torch.as_tensor(data["T_edges"][1:-1], dtype=X.dtype, device=X.device)
-                        if Ai is A_list[0]:
-                            mask = 1.0 - σ(X, tp[0])
-                        elif Ai is A_list[-1]:
-                            mask = σ(X, tp[-1])
-                        else:
-                            i = A_list.index(Ai)
-                            mask = σ(X, tp[i-1]) * (1.0 - σ(X, tp[i]))
+        #                 tp = torch.as_tensor(data["T_edges"][1:-1], dtype=X.dtype, device=X.device)
+        #                 if Ai is A_list[0]:
+        #                     mask = 1.0 - σ(X, tp[0])
+        #                 elif Ai is A_list[-1]:
+        #                     mask = σ(X, tp[-1])
+        #                 else:
+        #                     i = A_list.index(Ai)
+        #                     mask = σ(X, tp[i-1]) * (1.0 - σ(X, tp[i]))
 
-                        region_outs.append(lin * mask)
+        #                 region_outs.append(lin * mask)
 
-                    post_pred = torch.stack(region_outs, dim=0).sum(dim=0)
-                    post_rmse += loss_func(post_pred, Y).item()
+        #             post_pred = torch.stack(region_outs, dim=0).sum(dim=0)
+        #             post_rmse += loss_func(post_pred, Y).item()
 
-            post_rmse = np.sqrt(post_rmse / len(data['test_loader']))
-            scores['post_rmse_total'] = float(post_rmse)
+        #     post_rmse = np.sqrt(post_rmse / len(data['test_loader']))
+        #     scores['post_rmse_total'] = float(post_rmse)
 
         print(scores)
         create_report(scores, args)
