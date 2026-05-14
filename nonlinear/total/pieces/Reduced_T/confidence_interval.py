@@ -121,11 +121,12 @@ plt.fill_between(
 
 plt.xlabel("Number of sample points")
 plt.ylabel("RMSE")
-plt.title("Piece-wise Linearization KKT vs Standard NN")
+# plt.title("Piece-wise Linearization KKT vs Standard NN")
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()
 plt.savefig("rmse_with_ci_band.png", dpi=300)
+plt.savefig("rmse_with_ci_band.pdf")
 plt.show()
 
 

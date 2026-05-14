@@ -471,7 +471,7 @@ def evaluate_model(data, args):
                     pred_sig  = model(X, hard=False)
                     pred_hard = model(X, hard=True)
                     print("max |pred_sig - pred_hard| =", torch.max(torch.abs(pred_sig - pred_hard)).item())
-                    pred_diff = get_violation(args, data, X, pred, hard=True)
+                    pred_diff = get_violation(args, data, X, pred, hard=True)  # ← CHANGED: pass hard=False to get_violation for KKThPINN
                 else:
                     pred = model(X)
                     pred_diff = get_violation(args, data, X, pred, hard=False)

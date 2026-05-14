@@ -15,7 +15,7 @@ np_dtype = np.float32
 Tmin, Tmax = 280.0, 460.0
 
 def get_center_row(df, Tss, atol=1e-10):
-    mask = np.isclose(df["Temperature (T)"].to_numpy(), Tss, atol=atol)
+    mask = np.isclose(df["Temperature (T)"].to_numpy(), Tss, atol=atol,  rtol=0.0)
     rows = df.loc[mask]
     if len(rows) != 1:
         raise RuntimeError(

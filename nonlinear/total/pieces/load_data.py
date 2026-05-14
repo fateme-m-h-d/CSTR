@@ -289,9 +289,11 @@ if __name__ == "__main__":
     plt.title('Predictions Over Original Data')
     # plt.legend()
     plt.grid()
+    plt.tight_layout()
+    plt.savefig("concentration_vs_temperature.png", dpi=300)
     plt.show()
     
-import pandas as pd
+# import pandas as pd
 
 # # Load the data_limited.csv file
 # data_limited = pd.read_csv("./data_limited.csv")

@@ -317,9 +317,15 @@ def compute_piecewise_linear_violation(
     v_all = []
 
     for i, (A, B, b) in enumerate(zip(A_list, B_list, b_list)):
-        v = (X_scaled_t @ A.T + pred_scaled_t @ B.T - b)      # (N,1)
-        v_region = torch.abs(v * masks[:, i:i+1])             # masked contribution
-        v_all.append(v_region.detach().cpu().numpy().flatten())
+        # v = (X_scaled_t @ A.T + pred_scaled_t @ B.T - b)      # (N,1)
+        # v_region = torch.abs(v * masks[:, i:i+1])             # masked contribution
+        # v_all.append(v_region.detach().cpu().numpy().flatten())
+        v = torch.abs(X_scaled_t @ A.T + pred_scaled_t @ B.T - b).flatten()
+        m = masks[:, i].flatten()
+        v_plot = v.clone()
+        v_plot[m < 1e-3] = float("nan")   # or 1e-4, 1e-6
+        v_plot = v_plot * m
+        v_all.append(v_plot.detach().cpu().numpy())
 
     return v_all
 
@@ -343,7 +349,7 @@ def compute_violation_curve(model_name, archive_dir):
     pred_scaled_t = safe_predict(
     model,
     X_scaled_t,
-    hard=(model_name == "KKThPINN")
+    hard=(model_name == "KKThPINN") #change to (model_name == "KKThPINN") 
     )
     pred_scaled_np = pred_scaled_t.detach().cpu().numpy()
 
@@ -351,7 +357,7 @@ def compute_violation_curve(model_name, archive_dir):
         violation = compute_original_nonlinear_violation(T_GRID, pred_scaled_np, scaler)
     elif VIOLATION_KIND == "piecewise_linear":
         violation = compute_piecewise_linear_violation(
-            X_scaled_t, pred_scaled_t, A_scaled, B_scaled, b_scaled, T_edges_scaled, hard=(model_name == "KKThPINN")
+            X_scaled_t, pred_scaled_t, A_scaled, B_scaled, b_scaled, T_edges_scaled, hard=(model_name == "KKThPINN")  #change to (model_name == "KKThPINN")
         )
     else:
         raise ValueError("VIOLATION_KIND must be 'original_nonlinear' or 'piecewise_linear'")

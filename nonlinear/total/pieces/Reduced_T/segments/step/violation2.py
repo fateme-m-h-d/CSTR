@@ -33,7 +33,7 @@ RUN_INDEX_TO_USE = 1
 # Choose which violation to plot
 # "original_nonlinear"   -> |eq1(T, predicted Ca, predicted Cb)|
 # "piecewise_linear"     -> |A x + B y - b|
-VIOLATION_KIND = "piecewise_linear"
+VIOLATION_KIND = "original_nonlinear"
 
 USE_LOG_Y = True
 
