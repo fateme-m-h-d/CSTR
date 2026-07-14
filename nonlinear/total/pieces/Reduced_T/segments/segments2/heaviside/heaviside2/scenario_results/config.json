@@ -1,0 +1,30 @@
+{
+  "SEGMENT_SCENARIOS": [
+    1,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    30,
+    90
+  ],
+  "SEGMENTATION_TYPES": [
+    "uniform",
+    "adaptive"
+  ],
+  "ADAPTIVE_SPLIT_METRIC": "mean_abs_f_pl",
+  "N_REPEATS": 10,
+  "DATASET_TYPE": "cstr",
+  "DATASET_PATH": "data.csv",
+  "VAL_RATIO": 0.2,
+  "HIDDEN_DIM": 32,
+  "HIDDEN_NUM": 2,
+  "Z0_DIM": 3,
+  "INPUT_DIM": 1,
+  "EPOCHS": 1000,
+  "LR": 0.0001,
+  "BATCH_SIZE": 16,
+  "DTYPE": 64
+}

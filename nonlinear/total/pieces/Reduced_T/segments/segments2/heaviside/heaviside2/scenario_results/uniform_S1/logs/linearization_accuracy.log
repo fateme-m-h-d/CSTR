@@ -1,0 +1,49 @@
+
+=== Linearization accuracy by region ===
+ region_id  T_low  T_high  n_points  mean_abs_linearization_error  rmse_linearization_error  max_abs_linearization_error  mean_abs_nonlinear_residual  mean_abs_linearized_residual  mean_abs_y_PL_error_scaled  rmse_y_PL_error_scaled  max_abs_y_PL_error_scaled  mean_abs_y_PL_error_original  rmse_y_PL_error_original  max_abs_y_PL_error_original  mean_abs_f_PL  max_abs_f_PL  mean_abs_dCa  mean_abs_dCb  max_abs_dCa  max_abs_dCb  mean_abs_df_dCa  mean_abs_df_dCb  max_abs_df_dCa  max_abs_df_dCb  mean_amplification  max_amplification
+         0  280.0   460.0       150                       7.21264                 11.656013                    26.212859                 5.902623e-12                       7.21264                    0.063119                0.130952                   0.452214                      0.103933                  0.238445                     0.898697      72.255694    770.442009      0.064517      0.247282     0.234474     0.898697       553.205331       552.205331     4596.088395     4595.088395          612.994814        4928.497281
+
+=== Overall linearization accuracy ===
+Overall mean absolute linearization error: 7.212640e+00
+Overall RMSE linearization error:          1.165601e+01
+Overall max absolute linearization error: 2.621286e+01
+
+=== Manual PL y accuracy ===
+Overall mean absolute PL-y error, scaled:   6.311948e-02
+Overall RMSE PL-y error, scaled:            1.309519e-01
+Overall max absolute PL-y error, scaled:    4.522144e-01
+Overall mean absolute PL-y error, original: 1.039332e-01
+Overall RMSE PL-y error, original:          2.384451e-01
+Overall max absolute PL-y error, original:  8.986970e-01
+
+=== Nonlinear sensitivity diagnostic ===
+Mean |f(true)|:                 5.902623e-12
+Mean |f(PL)|:                   7.225569e+01
+Max  |f(PL)|:                   7.704420e+02
+Mean |dCa|:                     6.451719e-02
+Mean |dCb|:                     2.472824e-01
+Max  |dCa|:                     2.344745e-01
+Max  |dCb|:                     8.986970e-01
+Mean |df/dCa|:                  5.532053e+02
+Mean |df/dCb|:                  5.522053e+02
+Max  |df/dCa|:                  4.596088e+03
+Max  |df/dCb|:                  4.595088e+03
+Mean amplification |df|/|dy|:   6.129948e+02
+Max  amplification |df|/|dy|:   4.928497e+03
+
+Top 10 largest nonlinear residuals after PL projection:
+ Temperature (T)       Ca       Cb    Ca_PL    Cb_PL  abs_Ca_PL_error  abs_Cb_PL_error  abs_df_dCa  abs_df_dCb   abs_f_PL  amplification
+      460.000000 0.395692 0.791384 0.356227 0.640124         0.039465         0.151260 4596.088395 4595.088395 770.442009    4928.497281
+      459.497788 0.396003 0.792005 0.356845 0.641922         0.039158         0.150083 4487.475301 4486.475301 747.236701    4817.539185
+      459.000000 0.396311 0.792622 0.357458 0.643704         0.038854         0.148919 4382.126282 4381.126282 724.851385    4709.762246
+      457.000000 0.397560 0.795120 0.359922 0.650859         0.037638         0.144261 3981.136199 3980.136199 640.803565    4298.093863
+      456.550361 0.397843 0.795685 0.360476 0.652467         0.037366         0.143218 3895.712968 3894.712968 623.146949    4210.090049
+      455.000000 0.398823 0.797646 0.362391 0.658009         0.036432         0.139637 3613.800561 3612.800561 565.535908    3918.857378
+      453.000000 0.400100 0.800201 0.364866 0.665153         0.035235         0.135048 3277.567830 3276.567830 498.232567    3569.807600
+      451.818182 0.400862 0.801724 0.366331 0.669372         0.034531         0.132352 3092.531359 3091.531359 461.898964    3376.876351
+      451.000000 0.401393 0.802785 0.367346 0.672292         0.034046         0.130494 2970.057538 2969.057538 438.143687    3248.830189
+      450.000000 0.402044 0.804089 0.368588 0.675859         0.033456         0.128230 2826.373764 2825.373764 410.587280    3098.242220
+
+Saved:
+linearization_accuracy_detailed.csv
+linearization_accuracy_summary.csv

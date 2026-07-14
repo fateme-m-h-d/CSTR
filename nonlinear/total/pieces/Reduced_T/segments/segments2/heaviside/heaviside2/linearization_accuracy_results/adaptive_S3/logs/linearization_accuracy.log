@@ -1,0 +1,51 @@
+
+=== Linearization accuracy by region ===
+ region_id  T_low  T_high  n_points  mean_abs_linearization_error  rmse_linearization_error  max_abs_linearization_error  mean_abs_nonlinear_residual  mean_abs_linearized_residual  mean_abs_y_PL_error_scaled  rmse_y_PL_error_scaled  max_abs_y_PL_error_scaled  mean_abs_y_PL_error_original  rmse_y_PL_error_original  max_abs_y_PL_error_original  mean_abs_f_PL  max_abs_f_PL  mean_abs_dCa  mean_abs_dCb  max_abs_dCa  max_abs_dCb  mean_abs_df_dCa  mean_abs_df_dCb  max_abs_df_dCa  max_abs_df_dCb  mean_amplification  max_amplification
+         0  280.0   370.0        71                      0.193578                  0.279196                     0.777617                 4.302897e-16                      0.193578                    0.038570                0.068273                   0.247348                      0.056257                  0.103062                     0.432186       0.873725     10.230468      0.061184      0.107587     0.245780     0.432186         3.697666         2.697666       22.331845       21.331845            3.504848          20.576797
+         1  370.0   415.0        39                      0.359397                  0.535104                     1.646298                 3.493502e-14                      0.359397                    0.000675                0.001296                   0.006166                      0.001117                  0.002372                     0.012254       0.460133      2.474419      0.000675      0.002675     0.003092     0.012254       148.423886       147.423886      382.100838      381.100838          178.931717         461.207844
+         2  415.0   460.0        40                      1.703038                  2.305885                     5.537415                 2.210001e-11                      1.703038                    0.000230                0.000402                   0.001495                      0.000381                  0.000736                     0.002970       2.535392     14.014090      0.000229      0.000913     0.000743     0.002970      1923.243345      1922.243345     4596.088395     4595.088395         2329.519098        5561.835647
+
+=== Overall linearization accuracy ===
+Overall mean absolute linearization error: 6.392135e-01
+Overall RMSE linearization error:          1.236624e+00
+Overall max absolute linearization error: 5.537415e+00
+
+=== Manual PL y accuracy ===
+Overall mean absolute PL-y error, scaled:   1.849340e-02
+Overall RMSE PL-y error, scaled:            4.697613e-02
+Overall max absolute PL-y error, scaled:    2.473477e-01
+Overall mean absolute PL-y error, original: 2.702014e-02
+Overall RMSE PL-y error, original:          7.091744e-02
+Overall max absolute PL-y error, original:  4.321860e-01
+
+=== Nonlinear sensitivity diagnostic ===
+Mean |f(true)|:                 5.902623e-12
+Mean |f(PL)|:                   1.209302e+00
+Max  |f(PL)|:                   1.401409e+01
+Mean |dCa|:                     2.919676e-02
+Mean |dCb|:                     5.186366e-02
+Max  |dCa|:                     2.457802e-01
+Max  |dCb|:                     4.321860e-01
+Mean |df/dCa|:                  5.532053e+02
+Mean |df/dCb|:                  5.522053e+02
+Max  |df/dCa|:                  4.596088e+03
+Max  |df/dCb|:                  4.595088e+03
+Mean amplification |df|/|dy|:   6.693863e+02
+Max  amplification |df|/|dy|:   5.561836e+03
+
+Top 10 largest nonlinear residuals after PL projection:
+ Temperature (T)       Ca       Cb    Ca_PL    Cb_PL  abs_Ca_PL_error  abs_Cb_PL_error  abs_df_dCa  abs_df_dCb  abs_f_PL  amplification
+      460.000000 0.395692 0.791384 0.395081 0.788940         0.000611         0.002444 4596.088395 4595.088395 14.014090    5561.835647
+      459.497788 0.396003 0.792005 0.395417 0.789665         0.000585         0.002340 4487.475301 4486.475301 13.102167    5430.856929
+      459.000000 0.396311 0.792622 0.395751 0.790383         0.000560         0.002239 4382.126282 4381.126282 12.243668    5303.792215
+      369.000000 0.477898 0.955796 0.232118 0.523610         0.245780         0.432186   22.331845   21.331845 10.230468      20.576797
+      457.000000 0.397560 0.795120 0.397096 0.793265         0.000464         0.001855 3981.136199 3980.136199  9.215670    4819.941839
+      456.550361 0.397843 0.795685 0.397399 0.793912         0.000444         0.001773 3895.712968 3894.712968  8.620766    4716.824340
+      367.000000 0.481293 0.962587 0.253148 0.561409         0.228146         0.401178   19.454154   18.454154  8.482021      18.378735
+      365.000000 0.484915 0.969830 0.274163 0.599239         0.210752         0.370591   16.947775   15.947775  6.989821      16.395490
+      455.000000 0.398823 0.797646 0.398447 0.796142         0.000376         0.001504 3613.800561 3612.800561  6.786198    4376.409155
+      363.000000 0.488795 0.977589 0.295164 0.637104         0.193631         0.340485   14.768009   13.768009  5.722174      14.608850
+
+Saved:
+linearization_accuracy_detailed.csv
+linearization_accuracy_summary.csv

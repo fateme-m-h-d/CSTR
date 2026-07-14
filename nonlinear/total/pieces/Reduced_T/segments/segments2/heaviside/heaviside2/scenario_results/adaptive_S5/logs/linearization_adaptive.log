@@ -1,0 +1,30 @@
+
+=== Adaptive segmentation ===
+Target number of regions: 5
+Split metric:             mean_abs_f_pl
+Tmin, Tmax:               280.0, 460.0
+Scaler factors:           [800.           0.9936625    1.987325     1.81292375]
+Added edge 370.00000000 K | split [280.0000, 460.0000] | score=7.225569e+01 | regions=2/5
+Added edge 415.00000000 K | split [370.0000, 460.0000] | score=8.695128e+00 | regions=3/5
+Added edge 437.50000000 K | split [415.0000, 460.0000] | score=2.535392e+00 | regions=4/5
+Added edge 325.00000000 K | split [280.0000, 370.0000] | score=8.737247e-01 | regions=5/5
+
+Saved:
+region_edges.npz
+lin_params.csv
+ABb_matrices.csv
+adaptive_segmentation_summary.csv
+
+=== Adaptive segmentation summary ===
+ region_id  T_low  T_high  width  n_points  mean_abs_f_PL  max_abs_f_PL  rmse_f_PL  mean_abs_y_PL_scaled  max_abs_y_PL_scaled
+         0  280.0   325.0   45.0        38       0.045934      0.123305   0.058672              0.015216             0.105757
+         1  325.0   370.0   45.0        33       0.251984      1.910998   0.490881              0.010602             0.076569
+         2  370.0   415.0   45.0        39       0.460133      2.474419   0.786278              0.000675             0.006166
+         3  415.0   437.5   22.5        20       0.325496      1.225035   0.470539              0.000069             0.000420
+         4  437.5   460.0   22.5        20       0.796095      3.235163   1.265659              0.000047             0.000284
+
+=== Overall adaptive PL diagnostics ===
+Mean |f_PL|:              3.759286e-01
+Max  |f_PL|:              3.235163e+00
+Mean PL-y error, scaled:  5.321982e-03
+Max  PL-y error, scaled:  1.057568e-01

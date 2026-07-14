@@ -1,0 +1,26 @@
+Scaler Factors: [800.           0.9936625    1.987325     1.81292375]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaled_data.csv
+Scaler Factors outside function: [800.           0.9936625    1.987325     1.81292375]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [800.           0.9936625    1.987325     1.81292375]
+Namespace(model='KKThPINN', model_id='uniform_S3_projection', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='data.csv', val_ratio=0.2, job='projection_check', runs=1, run=0)
+
+Running projection sanity check
+Scaler Factors: [800.           0.9936625    1.987325     1.81292375]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaled_data.csv
+train set size: 150, val set size: 150, test set size: 150
+Dtypes after casting:
+[torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64]
+
+=== Projection sanity check ===
+This uses true Y as input to the projection layer.
+No NN prediction and no training are used.
+All metrics are averaged over individual points, not batch means.
+
+{'projection_mae_scaled': 0.009182182977613288, 'projection_max_abs_scaled': 0.1959263253934127, 'projection_rmse_scaled': 0.028121767731722137, 'violation': 0.012682597135286702, 'violation_original_nonlinear': 1.781304121017456}
+{'projection_mae_scaled': 0.009182182977613288, 'projection_max_abs_scaled': 0.1959263253934127, 'projection_rmse_scaled': 0.028121767731722137, 'violation': 0.012682597135286702, 'violation_original_nonlinear': 1.781304121017456}

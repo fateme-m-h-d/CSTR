@@ -1,0 +1,34 @@
+
+=== Adaptive segmentation ===
+Target number of regions: 7
+Split metric:             mean_abs_f_pl
+Tmin, Tmax:               280.0, 460.0
+Scaler factors:           [800.           0.9936625    1.987325     1.81292375]
+Added edge 370.00000000 K | split [280.0000, 460.0000] | score=7.225569e+01 | regions=2/7
+Added edge 415.00000000 K | split [370.0000, 460.0000] | score=8.695128e+00 | regions=3/7
+Added edge 437.50000000 K | split [415.0000, 460.0000] | score=2.535392e+00 | regions=4/7
+Added edge 325.00000000 K | split [280.0000, 370.0000] | score=8.737247e-01 | regions=5/7
+Added edge 448.75000000 K | split [437.5000, 460.0000] | score=7.960953e-01 | regions=6/7
+Added edge 392.50000000 K | split [370.0000, 415.0000] | score=4.601328e-01 | regions=7/7
+
+Saved:
+region_edges.npz
+lin_params.csv
+ABb_matrices.csv
+adaptive_segmentation_summary.csv
+
+=== Adaptive segmentation summary ===
+ region_id  T_low  T_high  width  n_points  mean_abs_f_PL  max_abs_f_PL  rmse_f_PL  mean_abs_y_PL_scaled  max_abs_y_PL_scaled
+         0 280.00  325.00  45.00        38       0.045934      0.123305   0.058672              0.015216             0.105757
+         1 325.00  370.00  45.00        33       0.251984      1.910998   0.490881              0.010602             0.076569
+         2 370.00  392.50  22.50        18       0.093799      0.274280   0.126828              0.000342             0.002253
+         3 392.50  415.00  22.50        21       0.108224      0.386267   0.147541              0.000105             0.000686
+         4 415.00  437.50  22.50        20       0.325496      1.225035   0.470539              0.000069             0.000420
+         5 437.50  448.75  11.25         9       0.131349      0.421046   0.187928              0.000012             0.000065
+         6 448.75  460.00  11.25        11       0.294152      0.779796   0.383620              0.000016             0.000068
+
+=== Overall adaptive PL diagnostics ===
+Mean |f_PL|:              1.787056e-01
+Max  |f_PL|:              1.910998e+00
+Mean PL-y error, scaled:  3.765903e-03
+Max  PL-y error, scaled:  1.057568e-01

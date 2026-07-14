@@ -101,7 +101,7 @@ def _augment_with_lifted_from_nn(X, pred2, data, args):
 
 # device = "cuda" if torch.cuda.is_available() else "cpu"
 device = "cpu"
-torch.set_default_dtype(torch.float32)
+torch.set_default_dtype(torch.float64)
 
 
 # Load the scaler used for normalization

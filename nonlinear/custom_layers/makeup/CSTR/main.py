@@ -29,7 +29,7 @@ def add_arguments():
     parser.add_argument("--eta", default=0.8, type=float)
     parser.add_argument("--sigma", default=2, type=float)
     parser.add_argument("--mu_safe", default=1e+9, type=float)
-    parser.add_argument("--dtype", default=32, type=int)
+    parser.add_argument("--dtype", default=64, type=int)
 
     parser.add_argument('--dataset_type', type=str, help='choose from cstr')
     parser.add_argument('--dataset_path', type=str)

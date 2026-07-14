@@ -300,7 +300,7 @@ def equations(variables, T):
 # Temperature range
 # -----------------------------
 n = 200
-T_values = np.linspace(350, 600, n)
+T_values = np.linspace(280, 600, n)
 
 # -----------------------------
 # Storage for positive/converged training data

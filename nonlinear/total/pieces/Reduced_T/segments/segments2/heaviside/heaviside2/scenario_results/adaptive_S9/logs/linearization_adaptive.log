@@ -1,0 +1,38 @@
+
+=== Adaptive segmentation ===
+Target number of regions: 9
+Split metric:             mean_abs_f_pl
+Tmin, Tmax:               280.0, 460.0
+Scaler factors:           [800.           0.9936625    1.987325     1.81292375]
+Added edge 370.00000000 K | split [280.0000, 460.0000] | score=7.225569e+01 | regions=2/9
+Added edge 415.00000000 K | split [370.0000, 460.0000] | score=8.695128e+00 | regions=3/9
+Added edge 437.50000000 K | split [415.0000, 460.0000] | score=2.535392e+00 | regions=4/9
+Added edge 325.00000000 K | split [280.0000, 370.0000] | score=8.737247e-01 | regions=5/9
+Added edge 448.75000000 K | split [437.5000, 460.0000] | score=7.960953e-01 | regions=6/9
+Added edge 392.50000000 K | split [370.0000, 415.0000] | score=4.601328e-01 | regions=7/9
+Added edge 426.25000000 K | split [415.0000, 437.5000] | score=3.254961e-01 | regions=8/9
+Added edge 454.37500000 K | split [448.7500, 460.0000] | score=2.941520e-01 | regions=9/9
+
+Saved:
+region_edges.npz
+lin_params.csv
+ABb_matrices.csv
+adaptive_segmentation_summary.csv
+
+=== Adaptive segmentation summary ===
+ region_id   T_low  T_high  width  n_points  mean_abs_f_PL  max_abs_f_PL  rmse_f_PL  mean_abs_y_PL_scaled  max_abs_y_PL_scaled
+         0 280.000 325.000 45.000        38       0.045934      0.123305   0.058672              0.015216             0.105757
+         1 325.000 370.000 45.000        33       0.251984      1.910998   0.490881              0.010602             0.076569
+         2 370.000 392.500 22.500        18       0.093799      0.274280   0.126828              0.000342             0.002253
+         3 392.500 415.000 22.500        21       0.108224      0.386267   0.147541              0.000105             0.000686
+         4 415.000 426.250 11.250         8       0.044330      0.120226   0.064390              0.000016             0.000113
+         5 426.250 437.500 11.250        12       0.101228      0.263671   0.125263              0.000019             0.000088
+         6 437.500 448.750 11.250         9       0.131349      0.421046   0.187928              0.000012             0.000065
+         7 448.750 454.375  5.625         5       0.036621      0.099939   0.050917              0.000003             0.000015
+         8 454.375 460.000  5.625         6       0.082619      0.191543   0.105739              0.000004             0.000017
+
+=== Overall adaptive PL diagnostics ===
+Mean |f_PL|:              9.956538e-02
+Max  |f_PL|:              1.910998e+00
+Mean PL-y error, scaled:  2.924239e-03
+Max  PL-y error, scaled:  1.057568e-01

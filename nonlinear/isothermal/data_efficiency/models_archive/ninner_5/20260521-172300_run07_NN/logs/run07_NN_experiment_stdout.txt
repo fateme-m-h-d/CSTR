@@ -1,0 +1,11 @@
+Namespace(model='NN', model_id='MODELID', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='./data.csv', val_ratio=0.2, job='experiment', runs=1, run=0)
+Scaler Factors: [1.5        0.92958034 1.38530722 1.71125899]
+Scaler saved at /home/f25moham/CSTR/nonlinear/isothermal/data_efficiency/new1/scaler.pkl
+train set size: 127, val set size: 42, test set size: 42
+
+
+Evaluating NN at run 0
+Loading: MODELID_0.2_0.pth
+{'rmse_total': 0.0030817257372397155, 'violation': 0.023381989729429963, 'violation_original_nonlinear': 0.02340452029416011}
+Evaluation time : 0.0072 s
+{'rmse_total': 0.0030817257372397155, 'violation': 0.023381989729429963, 'violation_original_nonlinear': 0.02340452029416011}

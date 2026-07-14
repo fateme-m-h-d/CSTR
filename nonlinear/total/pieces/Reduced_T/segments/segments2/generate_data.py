@@ -28,7 +28,7 @@ XTOL = 1e-11
 Tmin, Tmax = 280.0, 460.0
 
 # keep same idea as 2D:
-SEGMENT_SCENARIOS = [1, 2, 3, 5, 7, 9, 11]
+SEGMENT_SCENARIOS = [1, 2, 3, 5, 7, 9, 11, 30]
 
 def equations(variables, T):
     Cc, Cb, Ca = variables

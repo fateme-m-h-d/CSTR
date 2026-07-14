@@ -1,0 +1,38 @@
+Scaler Factors: [800.           0.9936625    1.987325     1.81292375]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaled_data.csv
+Scaler Factors outside function: [800.           0.9936625    1.987325     1.81292375]
+Scaler loaded successfully.
+Scaler Type: <class 'sklearn.preprocessing._data.MaxAbsScaler'>
+Scaler Factors (scale_): [800.           0.9936625    1.987325     1.81292375]
+Namespace(model='KKThPINN', model_id='adaptive_S90_r9', input_dim=1, hidden_dim=32, hidden_num=2, z0_dim=3, optimizer='adam', epochs=1000, batch_size=16, lr=0.0001, mu=1, max_subiter=500, eta=0.8, sigma=2, mu_safe=1000000000.0, dtype=64, dataset_type='cstr', dataset_path='data.csv', val_ratio=0.2, job='train', runs=1, run=0)
+Scaler Factors: [800.           0.9936625    1.987325     1.81292375]
+Scaler saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaler.pkl
+Scaled dataset saved at /home/f25moham/CSTR/nonlinear/total/pieces/Reduced_T/segments/segments2/heaviside/heaviside2/scaled_data.csv
+train set size: 90, val set size: 30, test set size: 30
+Dtypes after casting:
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+[torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64, torch.float64]
+Start Training…
+epoch: 00050 loss_train: 0.09827 loss_val: 0.11518 viol_train: 0.04873 viol_val: 0.06617
+epoch: 00100 loss_train: 0.04259 loss_val: 0.04878 viol_train: 0.00087 viol_val: 0.00106
+epoch: 00150 loss_train: 0.03515 loss_val: 0.03966 viol_train: 0.00569 viol_val: 0.00778
+epoch: 00200 loss_train: 0.03395 loss_val: 0.03715 viol_train: 0.01414 viol_val: 0.01737
+epoch: 00250 loss_train: 0.03555 loss_val: 0.03585 viol_train: 0.01419 viol_val: 0.01986
+epoch: 00300 loss_train: 0.03295 loss_val: 0.03594 viol_train: 0.01447 viol_val: 0.01853
+epoch: 00350 loss_train: 0.03090 loss_val: 0.03472 viol_train: 0.01407 viol_val: 0.01863
+epoch: 00400 loss_train: 0.03110 loss_val: 0.03325 viol_train: 0.01362 viol_val: 0.01840
+epoch: 00450 loss_train: 0.02930 loss_val: 0.03335 viol_train: 0.01502 viol_val: 0.01927
+epoch: 00500 loss_train: 0.02796 loss_val: 0.03176 viol_train: 0.01339 viol_val: 0.01744
+epoch: 00550 loss_train: 0.02668 loss_val: 0.02906 viol_train: 0.01182 viol_val: 0.01555
+epoch: 00600 loss_train: 0.02525 loss_val: 0.02687 viol_train: 0.00991 viol_val: 0.01456
+epoch: 00650 loss_train: 0.02251 loss_val: 0.02440 viol_train: 0.00763 viol_val: 0.01042
+epoch: 00700 loss_train: 0.02054 loss_val: 0.02269 viol_train: 0.00618 viol_val: 0.00870
+epoch: 00750 loss_train: 0.01899 loss_val: 0.01956 viol_train: 0.00426 viol_val: 0.00612
+epoch: 00800 loss_train: 0.01600 loss_val: 0.01630 viol_train: 0.00278 viol_val: 0.00396
+epoch: 00850 loss_train: 0.01437 loss_val: 0.01493 viol_train: 0.00126 viol_val: 0.00187
+epoch: 00900 loss_train: 0.01213 loss_val: 0.01263 viol_train: 0.00056 viol_val: 0.00075
+epoch: 00950 loss_train: 0.01065 loss_val: 0.01116 viol_train: 0.00039 viol_val: 0.00042
+epoch: 01000 loss_train: 0.00963 loss_val: 0.00982 viol_train: 0.00045 viol_val: 0.00043
+Training Finished!
