@@ -15,6 +15,12 @@ from .generate_data import Cbo, Cco, tau, kf_const, kr_const
 
 device = "cpu"
 
+def get_torch_dtype(args):
+    if args.dtype == 32:
+        return torch.float32
+    if args.dtype == 64:
+        return torch.float64
+    raise ValueError("--dtype must be either 32 or 64")
 
 def load_region_edges(npz_path="region_edges.npz"):
     arr = np.load(npz_path)
@@ -26,15 +32,17 @@ def LoadData(args):
         raise ValueError("Dataset not supported!")
 
     dataset_arr, scaler = load_data(args.dataset_path)
+    
+    torch_dtype = get_torch_dtype(args)
+    np_dtype = np.float32 if torch_dtype == torch.float32 else np.float64
+    
+    dataset_arr = dataset_arr.astype(np_dtype, copy=False)
 
     C_edges_raw = load_region_edges("region_edges.npz")
-    C_edges = C_edges_raw / scaler.scale_[0]
+    C_edges = (C_edges_raw / scaler.scale_[0]).astype(np_dtype, copy=False)
     n_regions = len(C_edges) - 1
 
-    if args.dtype == 32:
-        dataset_arr = dataset_arr.astype(np.float32)
-
-    dataset = Data_cstr(dataset_arr)
+    dataset = Data_cstr(dataset_arr, dtype=torch_dtype)
 
     if args.job == "projection_check":
         dataset.train_set = data.TensorDataset(dataset.X, dataset.Y)
@@ -77,6 +85,8 @@ def LoadData(args):
 
 
 def LoadModel(args, data):
+    torch_dtype = get_torch_dtype(args)
+    
     if args.model == "NN":
         model = NN(args.input_dim, args.hidden_dim, args.hidden_num, args.z0_dim)
     elif args.model == "KKThPINN":
@@ -85,9 +95,7 @@ def LoadModel(args, data):
     else:
         raise ValueError("Model not supported!")
 
-    if args.dtype == 32:
-        return model.to(device)
-    return model.double().to(device)
+    return model.to(device=device, dtype=torch_dtype)
 
 
 def get_optimizer(args, model):
@@ -133,10 +141,19 @@ def get_scaledABb(A, B, b, scaler):
     x_dim = A.shape[1]
     z_dim = B.shape[1]
     xscale, zscale = get_ScaleAndMean(scaler, x_dim, z_dim)
-    xscale = torch.tensor(xscale)
-    zscale = torch.tensor(zscale)
-    A_scaled = A * torch.ones_like(A) * xscale
-    B_scaled = B * torch.ones_like(B) * zscale
+    xscale = torch.as_tensor(
+        xscale,
+        dtype=A.dtype,
+        device=A.device,
+    )
+
+    zscale = torch.as_tensor(
+        zscale,
+        dtype=B.dtype,
+        device=B.device,
+    )
+    A_scaled = A * xscale
+    B_scaled = B * zscale
     return A_scaled, B_scaled, b
 
 
@@ -150,7 +167,11 @@ def get_scaledABb_list(A_list, B_list, b_list, scaler):
     return scaled_As, scaled_Bs, scaled_bs
 
 
-def load_ABb_from_csv(csv_path="ABb_matrices.csv"):
+def load_ABb_from_csv(csv_path="ABb_matrices.csv",  dtype=torch.float64,
+):
+    
+    np_dtype = np.float32 if dtype == torch.float32 else np.float64
+    
     df = (
         pd.read_csv(csv_path)
         .sort_values(["region_id", "constraint_order"])
@@ -161,18 +182,18 @@ def load_ABb_from_csv(csv_path="ABb_matrices.csv"):
 
     for _, g in df.groupby("region_id", sort=True):
         A = torch.tensor(
-            g[["A_Cao"]].to_numpy(dtype=float),
-            dtype=torch.float32
+            g[["A_Cao"]].to_numpy(dtype=np_dtype),
+            dtype=dtype
         )
 
         B = torch.tensor(
-            g[["B_Ca", "B_Cb", "B_Cc"]].to_numpy(dtype=float),
-            dtype=torch.float32
+            g[["B_Ca", "B_Cb", "B_Cc"]].to_numpy(dtype=np_dtype),
+            dtype=dtype
         )
 
         b = torch.tensor(
-            g["b"].to_numpy(dtype=float),
-            dtype=torch.float32
+            g["b"].to_numpy(dtype=np_dtype),
+            dtype=dtype
         )
 
         A_list.append(A)
@@ -183,12 +204,13 @@ def load_ABb_from_csv(csv_path="ABb_matrices.csv"):
 
 
 class Data_cstr(data.Dataset):
-    def __init__(self, dataset):
-        self.dataset_tensor = torch.from_numpy(dataset)
+    def __init__(self, dataset, dtype=torch.float64):
+        # self.dataset_tensor = torch.from_numpy(dataset)
+        self.dataset_tensor = torch.as_tensor(dataset, dtype=dtype)
         self.X = self.dataset_tensor[:, :1]
         self.Y = self.dataset_tensor[:, 1:]
         self.train_set, self.val_set, self.test_set = self.split_data(0.2)
-        self.A_list, self.B_list, self.b_list = load_ABb_from_csv("ABb_matrices.csv")
+        self.A_list, self.B_list, self.b_list = load_ABb_from_csv("ABb_matrices.csv", dtype=dtype,)
         self.constrained_indexes = []
         self.unconstrained_indexes = []
 

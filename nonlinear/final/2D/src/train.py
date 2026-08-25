@@ -16,7 +16,6 @@ from utils import (
 )
 
 device = "cpu"
-torch.set_default_dtype(torch.float32)
 
 
 def run_training(args, data):

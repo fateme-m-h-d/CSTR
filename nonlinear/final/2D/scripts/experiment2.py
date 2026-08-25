@@ -18,6 +18,9 @@ PYTHON_EXE = os.environ.get("PYTHON_EXE", "python")
 SCENARIO_ID = os.environ.get("SCENARIO_ID", "default")
 EPOCHS = int(os.environ.get("EPOCHS", "1000"))
 
+NOISE_LEVEL = float(os.environ.get("NOISE_LEVEL", "0.0"))
+NOISE_SEED_BASE = int(os.environ.get("NOISE_SEED_BASE", "1000"))
+
 SOURCE_FILES = ["main.py", "train.py", "models.py", "utils.py"]
 ARTIFACT_FILES = ["data.csv", "ABb_matrices.csv", "region_edges.npz"]
 
@@ -78,7 +81,7 @@ def extract_experiment_scores(output):
     }
 
 
-def run_main(model_name, job):
+def run_main(model_name, job, run_index):
     command = [
         PYTHON_EXE,
         "main.py",
@@ -88,6 +91,8 @@ def run_main(model_name, job):
         "--dataset_path", "./data.csv",
         "--job", job,
         "--epochs", str(EPOCHS),
+        "--noise_level", str(NOISE_LEVEL),
+        "--noise_seed", str(NOISE_SEED_BASE + run_index),
     ]
     start = time.perf_counter()
     result = subprocess.run(
@@ -123,8 +128,8 @@ def run_model_experiments(model_name):
     for run_index in range(1, NUM_ITERATIONS + 1):
         print(f"{model_name} run {run_index}/{NUM_ITERATIONS}")
         prepare_work_dir()
-        train_result = run_main(model_name, "train")
-        scores = run_main(model_name, "experiment")
+        train_result = run_main(model_name, "train", run_index)
+        scores = run_main(model_name, "experiment", run_index)
         results["training_errors"].append(train_result["loss_train"])
         results["training_times"].append(train_result["train_time_sec"])
         results["experiment_rmse"].append(scores["rmse_total"])

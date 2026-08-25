@@ -35,6 +35,13 @@ def add_arguments():
 
 
 def main(args):
+    if args.dtype == 64:
+        torch.set_default_dtype(torch.float64)
+    elif args.dtype == 32:
+        torch.set_default_dtype(torch.float32)
+    else:
+        raise ValueError("--dtype must be 32 or 64")
+    
     args.loss_type = "MSE"
     data = LoadData(args)
 

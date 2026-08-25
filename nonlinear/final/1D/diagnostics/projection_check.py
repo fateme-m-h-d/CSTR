@@ -5,7 +5,6 @@ from src.utils import LoadData, LoadModel, get_violation, compute_violation_orig
 
 device = "cpu"
 
-
 def projection_only_forward(model, X, Y):
     masks = model.get_masks_1d(X)
 
@@ -38,27 +37,78 @@ def run_projection_check(args, data):
 
             output_error = torch.abs(Y_proj - Y)
 
-            pl_violation = get_violation(args, data, X, Y_proj)
-
-            nl_violation = compute_violation_original_nonlinear(
-                X, Y_proj, data["scaler"], device=device
+            pl_violation = get_violation(
+                args,
+                data,
+                X,
+                Y_proj,
             )
 
-            all_output_errors.append(output_error.reshape(-1).detach().cpu())
-            all_pl_violations.append(torch.abs(pl_violation).reshape(-1).detach().cpu())
-            all_nl_violations.append(nl_violation.reshape(-1).detach().cpu())
+            nl_violation = compute_violation_original_nonlinear(
+                X,
+                Y_proj,
+                data["scaler"],
+                device=device,
+            )
+
+            # Keep dimensions:
+            # output_error: [batch_size, 3]
+            # pl_violation: [batch_size, 2]
+            # nl_violation: [batch_size, 2]
+            all_output_errors.append(
+                output_error.detach().cpu()
+            )
+
+            all_pl_violations.append(
+                torch.abs(pl_violation).detach().cpu()
+            )
+
+            all_nl_violations.append(
+                torch.abs(nl_violation).detach().cpu()
+            )
+
+    output_errors = torch.cat(all_output_errors, dim=0)
+    pl_violations = torch.cat(all_pl_violations, dim=0)
+    nl_violations = torch.cat(all_nl_violations, dim=0)
 
     results = {
-        "projection_check_output_MAE_scaled": torch.cat(all_output_errors).mean().item(),
-        "projection_check_PL_violation": torch.cat(all_pl_violations).mean().item(),
-        "projection_check_original_nonlinear_violation": torch.cat(all_nl_violations).mean().item(),
-        "n_output_values": int(torch.cat(all_output_errors).numel()),
-        "n_constraint_values": int(torch.cat(all_pl_violations).numel()),
-        "n_data_points": int(torch.cat(all_nl_violations).numel()),
+        # Output displacement
+        "projection_check_output_MAE_scaled":
+            output_errors.mean().item(),
+
+        # PL constraints
+        "projection_check_PL_violation":
+            pl_violations.mean().item(),
+
+        "projection_check_PL_reaction_violation":
+            pl_violations[:, 0].mean().item(),
+
+        "projection_check_PL_mass_balance_violation":
+            pl_violations[:, 1].mean().item(),
+
+        # Original constraints
+        "projection_check_original_nonlinear_violation":
+            nl_violations.mean().item(),
+
+        "projection_check_original_reaction_violation":
+            nl_violations[:, 0].mean().item(),
+
+        "projection_check_original_mass_balance_violation":
+            nl_violations[:, 1].mean().item(),
+
+        # Counts
+        "n_output_values":
+            int(output_errors.numel()),
+
+        "n_constraint_values":
+            int(pl_violations.numel()),
+
+        "n_data_points":
+            int(output_errors.shape[0]),
     }
 
-    for k, v in results.items():
-        print(f"{k}: {v}")
+    for key, value in results.items():
+        print(f"{key}: {value}")
 
     return results
 
@@ -79,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--mu", type=float, default=1)
-    parser.add_argument("--dtype", type=int, default=32)
+    parser.add_argument("--dtype", type=int, default=64, choices=[32, 64],)
     parser.add_argument("--dataset_type", type=str, default="cstr")
     parser.add_argument("--dataset_path", type=str, default="data.csv")
     parser.add_argument("--val_ratio", type=float, default=0.2)
@@ -88,6 +138,10 @@ if __name__ == "__main__":
     parser.add_argument("--run", type=int, default=0)
 
     args = parser.parse_args()
+    
+    torch.set_default_dtype(
+        torch.float64 if args.dtype == 64 else torch.float32
+    )
 
     data = LoadData(args)
     run_projection_check(args, data)

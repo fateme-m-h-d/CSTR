@@ -1,0 +1,25 @@
+In 2D/scripts/run_all.py, replace the current src.linearization call:
+
+run([
+    sys.executable,
+    "-m", "src.linearization",
+    "--nT_regions", n_t_regions,
+    "--nC_regions", N_C_REGIONS,
+])
+
+with:
+
+run([
+    sys.executable,
+    "-m", "src.linearization",
+    "--partition", "taylor_axiswise",
+    "--nT_regions", n_t_regions,
+    "--nC_regions", N_C_REGIONS,
+    "--reference_T_points", 181,
+    "--reference_C_points", 81,
+    "--safety_factor", 1.10,
+])
+
+For a fair comparison, add a loop over partition modes
+["uniform", "taylor_axiswise"] and include the mode in SCENARIO_ID and in the
+summary CSV. Generate data.csv only once and reuse the exact same file for both.

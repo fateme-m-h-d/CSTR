@@ -24,17 +24,37 @@ def add_arguments():
     parser.add_argument("--eta", default=0.8, type=float)
     parser.add_argument("--sigma", default=2, type=float)
     parser.add_argument("--mu_safe", default=1e9, type=float)
-    parser.add_argument("--dtype", default=32, type=int)
+    parser.add_argument("--dtype", default=64, type=int, choices=[32, 64])
     parser.add_argument("--dataset_type", type=str)
     parser.add_argument("--dataset_path", type=str)
     parser.add_argument("--val_ratio", type=float, default=0.2)
     parser.add_argument("--job", type=str)
     parser.add_argument("--runs", type=int, default=1)
     parser.add_argument("--run", type=int, default=0)
+    parser.add_argument(
+        "--noise_level",
+        type=float,
+        default=0.0,
+        help="Gaussian noise std as a fraction of each training output std.",
+    )
+
+    parser.add_argument(
+        "--noise_seed",
+        type=int,
+        default=1234,
+        help="Random seed used to generate training-data noise.",
+    )
     return parser.parse_args()
 
 
 def main(args):
+    
+    torch.set_default_dtype(
+    torch.float64
+    if args.dtype == 64
+    else torch.float32
+    )
+    
     args.run = 0
 
     if args.job == "train":

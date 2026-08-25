@@ -6,7 +6,7 @@ import torch.nn as nn
 from .utils import LoadModel, get_optimizer, get_loss_func, get_violation, PINNLoss, ALMLoss, compute_violation_original_nonlinear
 
 device = "cpu"
-torch.set_default_dtype(torch.float64)
+# torch.set_default_dtype(torch.float64)
 
 
 def run_training(args, data):

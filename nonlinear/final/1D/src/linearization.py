@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--nC_regions", type=int, required=True)
     args = parser.parse_args()
 
-    C_edges = np.linspace(Caomin, Caomax, args.nC_regions + 1, dtype=float)
+    C_edges = np.linspace(Caomin, Caomax, args.nC_regions + 1, dtype=np.float64)
     C_centers = 0.5 * (C_edges[:-1] + C_edges[1:])
     np.savez("region_edges.npz", C_edges=C_edges)
 
@@ -67,7 +67,7 @@ def main():
         })
 
     lin_df = pd.DataFrame(lin_params).sort_values("region_id").reset_index(drop=True)
-    lin_df.to_csv("lin_params.csv", index=False)
+    lin_df.to_csv("lin_params.csv", index=False, float_format="%.17g",)
     AB_rows = []
 
     for _, r in lin_df.iterrows():
@@ -107,7 +107,7 @@ def main():
         .sort_values(["region_id", "constraint_order"])
         .reset_index(drop=True)
     )
-    AB_df.to_csv("ABb_matrices.csv", index=False)
+    AB_df.to_csv("ABb_matrices.csv", index=False, float_format="%.17g",)
 
 
 if __name__ == "__main__":

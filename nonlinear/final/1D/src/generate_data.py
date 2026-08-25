@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from .config import SEGMENT_SCENARIOS
 
-np_dtype = np.float32
+np_dtype = np.float64
 
 V = 10.0
 Q = 1.0
@@ -118,7 +118,7 @@ def main():
             fail_rows.append((float(Caopt), mesg))
 
     df = pd.DataFrame(rows).sort_values(["Cao"]).reset_index(drop=True)
-    df.to_csv(args.out_csv, index=False)
+    df.to_csv(args.out_csv, index=False, float_format="%.17g",)
 
     if fail_rows:
         fail_df = pd.DataFrame(fail_rows, columns=["Cao", "message"])

@@ -3,7 +3,7 @@ import pandas as pd
 import sympy as sym
 import argparse
 
-np_dtype = np.float32
+np_dtype = np.float64
 
 V = 10.0
 Q = 1.0
@@ -40,8 +40,8 @@ def main():
     parser.add_argument("--nC_regions", type=int, default=3)
     args = parser.parse_args()
 
-    T_edges = np.linspace(Tmin, Tmax, args.nT_regions + 1, dtype=float)
-    C_edges = np.linspace(Caomin, Caomax, args.nC_regions + 1, dtype=float)
+    T_edges = np.linspace(Tmin, Tmax, args.nT_regions + 1, dtype=np.float64)
+    C_edges = np.linspace(Caomin, Caomax, args.nC_regions + 1, dtype=np.float64)
 
     np.savez("region_edges.npz", T_edges=T_edges, C_edges=C_edges)
     print("Saved region_edges.npz")
@@ -123,7 +123,7 @@ def main():
             })
 
     lin_df = pd.DataFrame(rows).sort_values("region_id").reset_index(drop=True)
-    lin_df.to_csv("lin_params.csv", index=False)
+    lin_df.to_csv("lin_params.csv", index=False, float_format="%.17g")
     print("Saved lin_params.csv")
     
     
@@ -161,7 +161,7 @@ def main():
         .reset_index(drop=True)
     )
 
-    AB_df.to_csv("ABb_matrices.csv", index=False)
+    AB_df.to_csv("ABb_matrices.csv", index=False, float_format="%.17g")
     print("Saved ABb_matrices.csv")
     print(f"Regions: {len(lin_df)} = {args.nT_regions} x {args.nC_regions}")
     print(f"Constraints per region: 2")
