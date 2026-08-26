@@ -1,0 +1,117 @@
+{
+  "artifacts": {
+    "history": "history.csv",
+    "native_projection_manifest": "projection_native.json",
+    "parameters": "parameters.csv",
+    "predictions": "predictions.csv",
+    "summary": "summary.json",
+    "variables": "variables.csv",
+    "weights": "model_weights.npz"
+  },
+  "created_at": "20260826_171224",
+  "fixed_inverse_values": [],
+  "format": "kkt-hardnet-metadata-v1",
+  "inverse_mode": false,
+  "model_name": "CSTR_KKTHardNet_PLStyle_run1",
+  "problem": {
+    "constraint_details": [
+      {
+        "kind": "eq",
+        "residual": "(((((Cao * 1.5) - (Ca * 0.9295803373270256)) - (((0.3696156151410192 * (Ca * 0.9295803373270256)) * ((Cb * 1.385307216645321) ** 2.0)) * 10.0)) + ((0.11487419956649154 * (Cc * 1.711258988018924)) * 10.0)) - 0.0)",
+        "text": "((((Cao * 1.5) - (Ca * 0.9295803373270256)) - (((0.3696156151410192 * (Ca * 0.9295803373270256)) * ((Cb * 1.385307216645321) ** 2.0)) * 10.0)) + ((0.11487419956649154 * (Cc * 1.711258988018924)) * 10.0)) == 0.0"
+      },
+      {
+        "kind": "eq",
+        "residual": "(((((((Cao * 1.5) - (Ca * 0.9295803373270256)) + 2.0) - (Cb * 1.385307216645321)) + 0.0) - (Cc * 1.711258988018924)) - 0.0)",
+        "text": "((((((Cao * 1.5) - (Ca * 0.9295803373270256)) + 2.0) - (Cb * 1.385307216645321)) + 0.0) - (Cc * 1.711258988018924)) == 0.0"
+      }
+    ],
+    "constraints": [
+      "((((Cao * 1.5) - (Ca * 0.9295803373270256)) - (((0.3696156151410192 * (Ca * 0.9295803373270256)) * ((Cb * 1.385307216645321) ** 2.0)) * 10.0)) + ((0.11487419956649154 * (Cc * 1.711258988018924)) * 10.0)) == 0.0",
+      "((((((Cao * 1.5) - (Ca * 0.9295803373270256)) + 2.0) - (Cb * 1.385307216645321)) + 0.0) - (Cc * 1.711258988018924)) == 0.0"
+    ],
+    "inverse_initial_values": [],
+    "inverse_parameters": [],
+    "name": "CSTR_KKTHardNet_PLStyle_run1",
+    "objective": null,
+    "parameters": [
+      "Cao"
+    ],
+    "variables": [
+      "Ca",
+      "Cb",
+      "Cc"
+    ]
+  },
+  "projection": {
+    "armijo_alpha": 0.0001,
+    "armijo_beta": 0.5,
+    "armijo_max_steps": 10,
+    "backward_reg": 1e-08,
+    "fb_eps": 1e-08,
+    "gn_max_iters": 100,
+    "gn_reg": 0.001,
+    "gn_tol": 1e-06,
+    "max_backtrack_iter": 10,
+    "newton_step_length": 0.5
+  },
+  "task": "surrogate",
+  "training": {
+    "batch_size": 16,
+    "cons_alpha": 0.5,
+    "drop_last": false,
+    "dtype": "float32",
+    "epoch_mlp": 100,
+    "epochs": 1000,
+    "eta": null,
+    "hidden_layers": 2,
+    "hidden_size": 32,
+    "learning_rate": 0.0001,
+    "print_every": 100,
+    "seed": 42,
+    "train_frac": 0.75
+  },
+  "weights_manifest": {
+    "file": "model_weights.npz",
+    "format": "kkthn_mlp_weights_v1",
+    "inverse_mode": false,
+    "layers": [
+      {
+        "bias_key": "layer_0_b",
+        "bias_shape": [
+          32
+        ],
+        "index": 0,
+        "weight_key": "layer_0_W",
+        "weight_shape": [
+          1,
+          32
+        ]
+      },
+      {
+        "bias_key": "layer_1_b",
+        "bias_shape": [
+          32
+        ],
+        "index": 1,
+        "weight_key": "layer_1_W",
+        "weight_shape": [
+          32,
+          32
+        ]
+      },
+      {
+        "bias_key": "layer_2_b",
+        "bias_shape": [
+          3
+        ],
+        "index": 2,
+        "weight_key": "layer_2_W",
+        "weight_shape": [
+          32,
+          3
+        ]
+      }
+    ]
+  }
+}

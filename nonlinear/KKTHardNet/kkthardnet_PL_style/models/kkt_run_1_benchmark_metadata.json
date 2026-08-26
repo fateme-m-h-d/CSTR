@@ -1,0 +1,30 @@
+{
+  "run": 1,
+  "model_seed": 42,
+  "split_seed": 42,
+  "maxabs_scales": [
+    1.5,
+    0.9295803373270256,
+    1.385307216645321,
+    1.711258988018924
+  ],
+  "kkt_run_dir": "/home/f25moham/CSTR/nonlinear/KKTHardNet/kkthardnet_PL_style/CSTR_KKTHardNet_PLStyle_run1_20260826_171208",
+  "kkt_metadata": "/home/f25moham/CSTR/nonlinear/KKTHardNet/kkthardnet_PL_style/CSTR_KKTHardNet_PLStyle_run1_20260826_171208/metadata.json",
+  "configuration": {
+    "hidden_neurons": 32,
+    "hidden_layers": 2,
+    "epochs": 1000,
+    "batch_size": 16,
+    "learning_rate": 0.0001,
+    "dtype": "float32",
+    "device": "cpu",
+    "projection_tolerance": 1e-06,
+    "max_projection_iterations": 100,
+    "epoch_mlp": 100,
+    "cons_alpha": 0.5,
+    "checkpoint_policy": "final_epoch",
+    "validation_effective_shuffle": false,
+    "test_shuffle": false,
+    "train_shuffle": true
+  }
+}
