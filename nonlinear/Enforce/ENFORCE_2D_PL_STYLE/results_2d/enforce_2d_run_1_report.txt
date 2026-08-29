@@ -1,0 +1,22 @@
+ENFORCE 2D CSTR - PL-KKT-hPINN-style benchmark
+================================================================
+training_tolerance: 1.000e-04
+inference_tolerance: 1.000e-06
+max_projection_iterations: 100
+test_batch_size: 16
+projection_iterations_by_batch: [4, 4, 4]
+mean_projection_iterations_across_batches: 4.000000
+
+Metrics
+rmse_pl_style_scaled: 4.290075636882e-02
+original_nonlinear_violation_pl_style: 4.135667117319e-08
+rmse_ca_physical: 4.817361856573e-02
+rmse_cb_physical: 1.189669942735e-01
+rmse_cc_physical: 9.874421104143e-02
+rmse_overall_physical: 9.349556578860e-02
+g1_mean_abs: 4.057555053026e-08
+g2_mean_abs: 4.047340165955e-08
+overall_mean_abs_violation: 4.052447609490e-08
+g1_max_abs: 4.768389771925e-08
+g2_max_abs: 4.768371630881e-08
+overall_max_abs_violation: 4.768389771925e-08

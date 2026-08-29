@@ -1,0 +1,21 @@
+KKT-HardNet 2D CSTR - PL-KKT-hPINN-style benchmark
+====================================================================
+projection_backend_for_test: jax
+kkt_gn_tolerance: 1.000e-06
+max_projection_iterations: 100
+test_batch_size: 16
+note: gn_tol is KKT-HardNet's native KKT/Gauss-Newton stopping quantity
+
+Metrics
+rmse_pl_style_scaled: 3.983416888247e-02
+original_nonlinear_violation_pl_style: 3.634133349929e-07
+rmse_ca_physical: 4.249524398186e-02
+rmse_cb_physical: 1.107836084187e-01
+rmse_cc_physical: 9.469372565669e-02
+rmse_overall_physical: 8.764655409483e-02
+g1_mean_abs: 6.958346014958e-07
+g2_mean_abs: 6.883867004571e-08
+overall_mean_abs_violation: 3.823366357708e-07
+g1_max_abs: 9.945156307367e-07
+g2_max_abs: 7.672379085388e-07
+overall_max_abs_violation: 9.945156307367e-07

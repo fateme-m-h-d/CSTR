@@ -1,0 +1,42 @@
+{
+  "run": 1,
+  "problem_dimension": "2D inputs: T and Cao",
+  "model_seed": 42,
+  "split_seed": 42,
+  "columns": [
+    "Temperature (T)",
+    "Cao",
+    "Ca",
+    "Cb",
+    "Cc"
+  ],
+  "maxabs_scales": [
+    460.0,
+    1.2,
+    1.1924139802058196,
+    1.9898345400809252,
+    1.953629530062197
+  ],
+  "configuration": {
+    "architecture": [
+      2,
+      32,
+      32,
+      3
+    ],
+    "epochs": 1000,
+    "batch_size": 16,
+    "learning_rate": 0.0001,
+    "dtype": "float32",
+    "device": "cpu",
+    "training_tolerance": 0.0001,
+    "inference_tolerance": 1e-06,
+    "max_projection_iterations": 100,
+    "weight_loss_displacement": 0.5,
+    "checkpoint_policy": "final_epoch",
+    "validation_used_by_native_trainer": false,
+    "test_shuffle": false,
+    "train_shuffle": true,
+    "linearization_used": false
+  }
+}

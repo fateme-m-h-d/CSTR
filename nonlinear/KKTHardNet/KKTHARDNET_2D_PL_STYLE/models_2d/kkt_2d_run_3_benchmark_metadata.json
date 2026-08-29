@@ -1,0 +1,37 @@
+{
+  "run": 3,
+  "problem_dimension": "2D inputs: T and Cao",
+  "model_seed": 44,
+  "split_seed": 42,
+  "maxabs_scales": [
+    460.0,
+    1.2,
+    1.1924139802058196,
+    1.9898345400809252,
+    1.953629530062197
+  ],
+  "kkt_run_dir": "/home/f25moham/CSTR/nonlinear/KKTHardNet/KKTHARDNET_2D_PL_STYLE/CSTR_2D_KKTHardNet_PLStyle_run3_20260828_121354",
+  "kkt_metadata": "/home/f25moham/CSTR/nonlinear/KKTHardNet/KKTHARDNET_2D_PL_STYLE/CSTR_2D_KKTHardNet_PLStyle_run3_20260828_121354/metadata.json",
+  "configuration": {
+    "architecture": [
+      2,
+      32,
+      32,
+      3
+    ],
+    "epochs": 1000,
+    "batch_size": 16,
+    "learning_rate": 0.0001,
+    "dtype": "float64",
+    "device": "cpu",
+    "projection_tolerance": 1e-06,
+    "max_projection_iterations": 100,
+    "epoch_mlp": 100,
+    "cons_alpha": 0.5,
+    "checkpoint_policy": "final_epoch",
+    "validation_effective_shuffle": false,
+    "test_shuffle": false,
+    "train_shuffle": true,
+    "linearization_used": false
+  }
+}
