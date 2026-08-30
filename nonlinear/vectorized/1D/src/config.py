@@ -1,0 +1,17 @@
+SEGMENT_SCENARIOS = [1, 2, 3, 5, 11, 30, 55, 90]
+
+N_TOTAL_POINTS = 150
+N_REPEATS = 50
+SEED = 0
+
+T_ISO = 350.0
+CAO_MIN = 0.5
+CAO_MAX = 1.5
+
+BATCH_SIZE = 16
+EPOCHS = 1000
+LR = 1e-4
+DTYPE = "float64"
+
+RESULTS_DIR = "results"
+FIGURES_DIR = "figures"
