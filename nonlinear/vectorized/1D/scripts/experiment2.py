@@ -52,11 +52,13 @@ def extract_experiment_scores(output):
                 "rmse_total": float(scores.get("rmse_total", np.nan)),
                 "violation": float(scores.get("violation", np.nan)),
                 "violation_original_nonlinear": float(scores.get("violation_original_nonlinear", np.nan)),
+                "prediction_time_sec": float(scores.get("prediction_time_sec", np.nan)),
             }
     return {
         "rmse_total": np.nan,
         "violation": np.nan,
         "violation_original_nonlinear": np.nan,
+        "prediction_time_sec": np.nan,
     }
 
 
@@ -95,7 +97,8 @@ def run_main(model_name, job, run_idx):
 
 def run_model_experiments(model_name, num_iterations):
     training_errors, training_times = [], []
-    experiment_rmse, experiment_viol, experiment_viol_nl, experiment_times = [], [], [], []
+    experiment_rmse, experiment_viol, experiment_viol_nl, experiment_times, prediction_times = [], [], [], [], []
+    
 
     for run_idx in range(1, num_iterations + 1):
         print(f"{model_name} run {run_idx}/{num_iterations}")
@@ -109,7 +112,7 @@ def run_model_experiments(model_name, num_iterations):
         experiment_viol.append(float(scores.get("violation", np.nan)))
         experiment_viol_nl.append(float(scores.get("violation_original_nonlinear", np.nan)))
         experiment_times.append(float(scores.get("experiment_time_sec", np.nan)))
-
+        prediction_times.append(float(scores.get("prediction_time_sec", np.nan)))
     return {
         "training_errors": training_errors,
         "training_times": training_times,
@@ -117,6 +120,7 @@ def run_model_experiments(model_name, num_iterations):
         "experiment_viol": experiment_viol,
         "experiment_viol_nl": experiment_viol_nl,
         "experiment_times": experiment_times,
+        "prediction_times": prediction_times,
     }
 
 
@@ -142,6 +146,8 @@ def main():
         "KKThPINN_Experiment_VIOL": kkt_stats["experiment_viol"],
         "KKThPINN_Experiment_VIOL_NL": kkt_stats["experiment_viol_nl"],
         "KKThPINN_Experiment_Time_sec": kkt_stats["experiment_times"],
+        "NN_Prediction_Time_sec": nn_stats["prediction_times"],
+        "KKThPINN_Prediction_Time_sec": kkt_stats["prediction_times"],
     }).to_csv(EXPERIMENT_CSV_PATH, index=False)
 
     print(f"Finished {SCENARIO_ID}")

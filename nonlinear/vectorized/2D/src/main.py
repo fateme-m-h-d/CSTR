@@ -24,7 +24,7 @@ def add_arguments():
     parser.add_argument("--eta", default=0.8, type=float)
     parser.add_argument("--sigma", default=2, type=float)
     parser.add_argument("--mu_safe", default=1e9, type=float)
-    parser.add_argument("--dtype", default=32, type=int)
+    parser.add_argument("--dtype", default=64, type=int) #could change to 32 for float32
     parser.add_argument("--dataset_type", type=str)
     parser.add_argument("--dataset_path", type=str)
     parser.add_argument("--val_ratio", type=float, default=0.2)

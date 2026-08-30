@@ -34,10 +34,16 @@ def LoadData(args):
     dataset = Data_cstr(dataset_arr)
     dataset.resplit_data(args.val_ratio)
 
-    loader_args = {"batch_size": args.batch_size, "shuffle": True}
-    train_loader = data.DataLoader(dataset.train_set, **loader_args)
-    val_loader = data.DataLoader(dataset.val_set, **loader_args)
-    test_loader = data.DataLoader(dataset.test_set, **loader_args)
+    # loader_args = {"batch_size": args.batch_size, "shuffle": True}
+    # train_loader = data.DataLoader(dataset.train_set, **loader_args)
+    # val_loader = data.DataLoader(dataset.val_set, **loader_args)
+    # test_loader = data.DataLoader(dataset.test_set, **loader_args)
+    train_loader = data.DataLoader(dataset.train_set,batch_size=args.batch_size,shuffle=True,)
+
+    val_loader = data.DataLoader(dataset.val_set,batch_size=args.batch_size,shuffle=False,)
+
+    test_loader = data.DataLoader(dataset.test_set,batch_size=args.batch_size,shuffle=False,)
+    
 
     A_list, B_list, b_list = get_scaledABb_list(
         dataset.A_list, dataset.B_list, dataset.b_list, scaler

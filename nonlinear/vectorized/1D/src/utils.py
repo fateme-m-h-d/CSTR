@@ -43,13 +43,35 @@ def LoadData(args):
     else:
         dataset.resplit_data(args.val_ratio)
 
-    params = {
-        "batch_size": args.batch_size,
-        "shuffle": False if args.job == "projection_check" else True,
-    }
-    train_loader = data.DataLoader(dataset.train_set, **params)
-    val_loader = data.DataLoader(dataset.val_set, **params)
-    test_loader = data.DataLoader(dataset.test_set, **params)
+    # params = {
+    #     "batch_size": args.batch_size,
+    #     "shuffle": False if args.job == "projection_check" else True,
+    # }
+    # train_loader = data.DataLoader(dataset.train_set, **params)
+    # val_loader = data.DataLoader(dataset.val_set, **params)
+    # test_loader = data.DataLoader(dataset.test_set, **params)
+    if args.job == "projection_check":
+        train_shuffle = False
+    else:
+        train_shuffle = True
+
+    train_loader = data.DataLoader(
+        dataset.train_set,
+        batch_size=args.batch_size,
+        shuffle=train_shuffle,
+    )
+
+    val_loader = data.DataLoader(
+        dataset.val_set,
+        batch_size=args.batch_size,
+        shuffle=False,
+    )
+
+    test_loader = data.DataLoader(
+        dataset.test_set,
+        batch_size=args.batch_size,
+        shuffle=False,
+    )
 
     A_list, B_list, b_list = get_scaledABb_list(dataset.A_list, dataset.B_list, dataset.b_list, scaler)
     assert n_regions == len(A_list), f"{n_regions=} but {len(A_list)=}. Fix C_edges or ABb_matrices.csv."

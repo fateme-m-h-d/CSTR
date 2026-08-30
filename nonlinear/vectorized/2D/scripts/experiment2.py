@@ -70,11 +70,15 @@ def extract_experiment_scores(output):
                 "violation_original_nonlinear": float(
                     scores.get("violation_original_nonlinear", np.nan)
                 ),
+                "prediction_time_sec": float(
+                    scores.get("prediction_time_sec", np.nan)
+                ),
             }
     return {
         "rmse_total": np.nan,
         "violation": np.nan,
         "violation_original_nonlinear": np.nan,
+        "prediction_time_sec": np.nan,
     }
 
 
@@ -119,6 +123,7 @@ def run_model_experiments(model_name):
         "experiment_viol": [],
         "experiment_viol_nl": [],
         "experiment_times": [],
+        "prediction_times": [],
     }
     for run_index in range(1, NUM_ITERATIONS + 1):
         print(f"{model_name} run {run_index}/{NUM_ITERATIONS}")
@@ -133,6 +138,7 @@ def run_model_experiments(model_name):
             scores["violation_original_nonlinear"]
         )
         results["experiment_times"].append(scores["experiment_time_sec"])
+        results["prediction_times"].append(scores["prediction_time_sec"])
     return results
 
 
@@ -147,6 +153,8 @@ def main():
         "NN_Training_Time_sec": nn_results["training_times"],
         "KKThPINN_Training_Error": kkt_results["training_errors"],
         "KKThPINN_Training_Time_sec": kkt_results["training_times"],
+        "NN_Prediction_Time_sec": nn_results["prediction_times"],
+        "KKThPINN_Prediction_Time_sec": kkt_results["prediction_times"],
     }).to_csv(TRAINING_CSV, index=False)
 
     pd.DataFrame({

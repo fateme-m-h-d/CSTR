@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from .utils import LoadModel, get_optimizer, get_loss_func, get_violation, PINNLoss, ALMLoss, compute_violation_original_nonlinear
+import time
 
 device = "cpu"
 torch.set_default_dtype(torch.float64)
@@ -14,7 +15,7 @@ def run_training(args, data):
     optimizer = get_optimizer(args, model)
     loss_func = get_loss_func(args, data)
 
-    min_loss = np.inf
+    # min_loss = np.inf
     train_losses, val_losses = [], []
     train_violations, val_violations = [], []
 
@@ -38,9 +39,9 @@ def run_training(args, data):
         val_losses.append(val_loss)
         val_violations.append(val_violation.detach().item())
 
-        if np.mean(val_loss) < min_loss:
-            min_loss = np.mean(val_loss)
-            checkpoint(model, val_loss, args, epoch)
+        # if np.mean(val_loss) < min_loss:
+        #     min_loss = np.mean(val_loss)
+        #     checkpoint(model, val_loss, args, epoch)
 
         if (epoch + 1) % 50 == 0:
             print(f"epoch: {epoch+1:05d}",
@@ -49,6 +50,9 @@ def run_training(args, data):
                   f"viol_train: {train_violation:.5e}",
                   f"viol_val: {val_violation:.5e}")
 
+    # Save the final-epoch model for consistent cross-method comparison.
+    checkpoint(model,val_losses[-1],args,args.epochs - 1)
+    
     save_history(args, train_losses, val_losses, train_violations, val_violations)
     return model
 
@@ -121,11 +125,19 @@ def evaluate_model(data, args):
         rmse_total = 0.0
         violation = 0.0
         v_nl_batches = []
+        prediction_time = 0.0
 
         with torch.no_grad():
             for X, Y in data["test_loader"]:
                 X, Y = X.to(device), Y.to(device)
+                
+                # Pure prediction = NN forward + PL-KKT projection only.
+                prediction_start = time.perf_counter()
+        
                 pred = model(X)
+                
+                prediction_time += time.perf_counter() - prediction_start
+                
                 pred_diff = get_violation(args, data, X, pred)
                 rmse_total += loss_func(pred, Y).item()
                 violation += torch.abs(pred_diff).mean()
@@ -140,13 +152,14 @@ def evaluate_model(data, args):
             "rmse_total": float(rmse_total),
             "violation": float(violation),
             "violation_original_nonlinear": violation_original_nonlinear,
+            "prediction_time_sec": float(prediction_time),
         })
 
         create_report(scores, args)
         return scores
 
     except FileNotFoundError:
-        nan_scores = {"rmse_total": float("nan"), "violation": float("nan"), "violation_original_nonlinear": float("nan")}
+        nan_scores = {"rmse_total": float("nan"), "violation": float("nan"), "violation_original_nonlinear": float("nan"), "prediction_time_sec": float("nan")}
         create_report(nan_scores, args)
         return nan_scores
 

@@ -5,6 +5,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import time
+
 from utils import (
     ALMLoss,
     PINNLoss,
@@ -16,7 +18,7 @@ from utils import (
 )
 
 device = "cpu"
-torch.set_default_dtype(torch.float32)
+torch.set_default_dtype(torch.float64) #could change to torch.float32 for float32
 
 
 def run_training(args, data):
@@ -161,11 +163,20 @@ def evaluate_model(data, args):
         rmse_total = 0.0
         violation = 0.0
         nonlinear_violation_batches = []
+        prediction_time = 0.0
 
         with torch.no_grad():
             for X, Y in data["test_loader"]:
                 X, Y = X.to(device), Y.to(device)
+                
+                
+                # Pure prediction timing:
+                # NN forward + explicit PL-KKT projection only.
+                prediction_start = time.perf_counter()
                 pred = model(X)
+                
+                prediction_time += time.perf_counter() - prediction_start
+                
                 pred_diff = get_violation(args, data, X, pred)
                 rmse_total += loss_func(pred, Y).item()
                 violation += torch.abs(pred_diff.reshape(-1)).nanmean()
@@ -187,6 +198,7 @@ def evaluate_model(data, args):
             "violation_original_nonlinear": float(
                 np.mean(nonlinear_violation_batches)
             ),
+            "prediction_time_sec": float(prediction_time),
         }
         print(scores)
         create_report(scores, args)
