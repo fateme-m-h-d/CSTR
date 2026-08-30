@@ -229,7 +229,7 @@ def build_model(scales: np.ndarray, run: int) -> ENFORCE:
 def physical_residuals(
     x_physical: np.ndarray, predictions: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Recompute the two original nonlinear residuals in NumPy float64."""
+    """Recompute the two original nonlinear residuals in NumPy float32."""
     T = x_physical[:, 0]
     cao = x_physical[:, 1]
     ca, cb, cc = predictions[:, 0], predictions[:, 1], predictions[:, 2]
@@ -313,7 +313,7 @@ def train_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) -> None
     print(f"split: train={len(prepared['train_idx'])}, val={len(prepared['val_idx'])}, test={len(prepared['test_idx'])}")
     print(f"network: [2, {HIDDEN_NEURONS}, {HIDDEN_NEURONS}, 3]")
     print(f"epochs={EPOCHS}, batch_size={BATCH_SIZE}, learning_rate={LEARNING_RATE}")
-    print(f"dtype=float64, device=cpu, model_seed={model_seed_for_run(args.run)}")
+    print(f"dtype=float32, device=cpu, model_seed={model_seed_for_run(args.run)}")
     print(f"training tolerance={TRAINING_TOLERANCE}, inference tolerance={INFERENCE_TOLERANCE}, max_it={MAX_PROJECTION_ITERATIONS}")
     print("validation rows are held out; ENFORCE native Trainer does not use validation")
 
@@ -343,7 +343,7 @@ def train_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) -> None
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
             "learning_rate": LEARNING_RATE,
-            "dtype": "float64",
+            "dtype": "float32",
             "device": "cpu",
             "training_tolerance": TRAINING_TOLERANCE,
             "inference_tolerance": INFERENCE_TOLERANCE,
@@ -471,7 +471,7 @@ def main() -> None:
     args = parse_args()
     if args.run < 1:
         raise ValueError("--run must be >= 1")
-    torch.set_default_dtype(torch.float64)
+    torch.set_default_dtype(torch.float32)
     prepared = load_and_prepare_data(Path(args.data))
     if args.job == "train":
         train_job(args, prepared)
