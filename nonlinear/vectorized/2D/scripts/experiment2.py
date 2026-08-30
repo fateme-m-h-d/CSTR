@@ -153,8 +153,6 @@ def main():
         "NN_Training_Time_sec": nn_results["training_times"],
         "KKThPINN_Training_Error": kkt_results["training_errors"],
         "KKThPINN_Training_Time_sec": kkt_results["training_times"],
-        "NN_Prediction_Time_sec": nn_results["prediction_times"],
-        "KKThPINN_Prediction_Time_sec": kkt_results["prediction_times"],
     }).to_csv(TRAINING_CSV, index=False)
 
     pd.DataFrame({
@@ -166,6 +164,8 @@ def main():
         "KKThPINN_Experiment_VIOL": kkt_results["experiment_viol"],
         "KKThPINN_Experiment_VIOL_NL": kkt_results["experiment_viol_nl"],
         "KKThPINN_Experiment_Time_sec": kkt_results["experiment_times"],
+        "NN_Prediction_Time_sec": nn_results["prediction_times"],
+        "KKThPINN_Prediction_Time_sec": kkt_results["prediction_times"],
     }).to_csv(EXPERIMENT_CSV, index=False)
 
     if WORK_DIR.exists():
