@@ -447,15 +447,18 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
 
     predictions_physical: List[np.ndarray] = []
     projection_iterations: List[int] = []
+    prediction_time = 0.0
 
     # ENFORCE cannot use torch.no_grad(): it needs autograd to compute dc/dy.
     for sl in batched_slices(len(x_test_scaled), BATCH_SIZE):
         xb = torch.as_tensor(x_test_scaled[sl], dtype=DTYPE, device=DEVICE)
+        prediction_start = time.perf_counter()
         with torch.enable_grad():
             ytilde_scaled, _yhat_scaled, proj_iter = model.predict(
                 xb, training=False
             )
-            _, ytilde_physical = model.unscale(xb, ytilde_scaled)
+        prediction_time += time.perf_counter() - prediction_start
+        _, ytilde_physical = model.unscale(xb, ytilde_scaled)
         predictions_physical.append(
             ytilde_physical.detach().cpu().numpy().astype(np.float64)
         )
@@ -508,6 +511,7 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
             np.mean(projection_iterations)
         ),
         "evaluation_time_sec": evaluation_time,
+        "prediction_time_sec": prediction_time,
     }
     with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(metrics_payload, f, indent=2)
@@ -531,6 +535,7 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
     )
     print(f"Projection iterations by test batch: {projection_iterations}")
     print(f"Evaluation time: {evaluation_time:.6f} s")
+    print(f"Pure prediction time: {prediction_time:.6f} s")
 
 
 # ---------------------------------------------------------------------------

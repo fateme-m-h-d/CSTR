@@ -488,12 +488,17 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
     # Use JAX explicitly for deterministic comparison with the package's JAX
     # training/projection implementation and to avoid hardware/compiler-specific
     # native-C backend differences.
+    prediction_time = 0.0
     for sl in batched_slices(len(x_test_scaled), BATCH_SIZE):
+        prediction_start = time.perf_counter()
         pred = model.predict(
             np.asarray(x_test_scaled[sl], dtype=np.float32),
             projection_backend="jax",
         )
+        
         pred = np.asarray(pred, dtype=np.float64)
+        prediction_time += time.perf_counter() - prediction_start
+        
         if pred.ndim == 1:
             pred = pred.reshape(1, -1)
         predicted_batches.append(pred)
@@ -543,6 +548,7 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
         "run": args.run,
         "evaluation_time_sec": evaluation_time,
         "projection_backend": "jax",
+        "prediction_time_sec": prediction_time,
     }
     metrics_path = results_dir / f"kkt_run_{args.run}_metrics.json"
     with metrics_path.open("w", encoding="utf-8") as f:
@@ -566,6 +572,7 @@ def experiment_job(args: argparse.Namespace, prepared: Dict[str, np.ndarray]) ->
         f"{metrics['overall_max_abs_violation']:.10e}"
     )
     print(f"Evaluation time: {evaluation_time:.6f} s")
+    print(f"Pure prediction time: {prediction_time:.6f} s")
 
 
 # ---------------------------------------------------------------------------
