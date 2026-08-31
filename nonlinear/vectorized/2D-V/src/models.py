@@ -2,51 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-def get_masks_1d(values, edges):
-    edges = torch.as_tensor(edges, dtype=values.dtype, device=values.device)
-    n_regions = len(edges) - 1
-    if n_regions == 1:
-        return torch.ones(
-            (values.shape[0], 1), dtype=values.dtype, device=values.device
-        )
-
-    masks = torch.zeros(
-        (values.shape[0], n_regions),
-        dtype=values.dtype,
-        device=values.device,
-    )
-    for i in range(n_regions):
-        lower = edges[i]
-        upper = edges[i + 1]
-        if i < n_regions - 1:
-            in_region = (values >= lower) & (values < upper)
-        else:
-            in_region = (values >= lower) & (values <= upper)
-        masks[in_region, i] = 1.0
-
-    masks[values < edges[0], 0] = 1.0
-    masks[values > edges[-1], -1] = 1.0
-    return masks
-
-
-def get_masks_2d(X, T_edges, C_edges):
-    region = get_region_index_2d(
-        X,
-        T_edges,
-        C_edges,
-    )
-
-    nT = len(T_edges) - 1
-    nC = len(C_edges) - 1
-    n_regions = nT * nC
-
-    return F.one_hot(
-        region,
-        num_classes=n_regions,
-    ).to(dtype=X.dtype)
-
-
 class NN(nn.Module):
     def __init__(self, input_dim, hidden_dim, hidden_num, z0_dim):
         super().__init__()

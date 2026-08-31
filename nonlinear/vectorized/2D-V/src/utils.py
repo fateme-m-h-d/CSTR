@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils import data
 
-from models import NN, NNOPT, get_masks_2d
+from models import NN, NNOPT
 
 device = "cpu"
 
