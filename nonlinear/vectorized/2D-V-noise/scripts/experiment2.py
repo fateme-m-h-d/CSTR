@@ -19,46 +19,8 @@ SCENARIO_ID = os.environ.get("SCENARIO_ID", "default")
 EPOCHS = int(os.environ.get("EPOCHS", "1000"))
 
 SOURCE_FILES = ["main.py", "train.py", "models.py", "utils.py"]
-ARTIFACT_FILES = ["data.csv", "ABb_matrices.csv", "region_edges.npz","split_indices.npz"]
+ARTIFACT_FILES = ["data.csv", "ABb_matrices.csv", "region_edges.npz"]
 
-
-N_T_REGIONS = int(os.environ.get("N_T_REGIONS", "11"))
-N_C_REGIONS = int(os.environ.get("N_C_REGIONS", "3"))
-NOISE_LEVEL = float(os.environ.get("NOISE_LEVEL", "0.05"))
-
-
-def prepare_repetition_artifacts(run_index):
-    noise_seed = 1000 + run_index
-
-    # Generate noisy training/validation data for this repetition.
-    subprocess.run(
-        [
-            PYTHON_EXE,
-            "-m",
-            "src.prepare_noisy_data",
-            "--seed",
-            str(noise_seed),
-            "--noise_level",
-            str(NOISE_LEVEL),
-        ],
-        cwd=BASE_DIR,
-        check=True,
-    )
-
-    # Recalculate the PL approximation using the noisy center values.
-    subprocess.run(
-        [
-            PYTHON_EXE,
-            "-m",
-            "src.linearization",
-            "--nT_regions",
-            str(N_T_REGIONS),
-            "--nC_regions",
-            str(N_C_REGIONS),
-        ],
-        cwd=BASE_DIR,
-        check=True,
-    )
 
 def prepare_work_dir():
     if WORK_DIR.exists():
@@ -163,22 +125,13 @@ def run_model_experiments(model_name):
         "experiment_times": [],
         "prediction_times": [],
     }
-    # for run_index in range(1, NUM_ITERATIONS + 1):
-    #     print(f"{model_name} run {run_index}/{NUM_ITERATIONS}")
-    #     prepare_work_dir()
-    
     for run_index in range(1, NUM_ITERATIONS + 1):
         print(f"{model_name} run {run_index}/{NUM_ITERATIONS}")
-
-        # Create the repeat-specific noisy data and PL matrices first.
-        prepare_repetition_artifacts(run_index)
-
-        # Then copy them into the working directory.
         prepare_work_dir()
 
         # Different noise for each repetition.
         # The same repetition receives identical noise for both models.
-        # os.environ["NOISE_SEED"] = str(1000 + run_index)
+        os.environ["NOISE_SEED"] = str(1000 + run_index)
 
         train_result = run_main(model_name, "train")
         scores = run_main(model_name, "experiment")

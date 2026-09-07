@@ -36,39 +36,39 @@ def LoadData(args):
     dataset = Data_cstr(dataset_arr)
     dataset.resplit_data(args.val_ratio)
     
-    # noise_level = float(os.environ.get("NOISE_LEVEL", "0.0"))
+    noise_level = float(os.environ.get("NOISE_LEVEL", "0.0"))
 
-    # if args.job == "train" and noise_level > 0.0:
-    #     # Collect CLEAN training inputs and outputs.
-    #     X_train = torch.stack([x for x, y in dataset.train_set])
-    #     Y_train = torch.stack([y for x, y in dataset.train_set])
+    if args.job == "train" and noise_level > 0.0:
+        # Collect CLEAN training inputs and outputs.
+        X_train = torch.stack([x for x, y in dataset.train_set])
+        Y_train = torch.stack([y for x, y in dataset.train_set])
 
-    #     # One standard deviation per output: Ca, Cb, Cc.
-    #     Y_std = torch.std(Y_train, dim=0, unbiased=False)
+        # One standard deviation per output: Ca, Cb, Cc.
+        Y_std = torch.std(Y_train, dim=0, unbiased=False)
 
-    #     # Separate random generator for reproducible measurement noise.
-    #     noise_seed = int(os.environ.get("NOISE_SEED", "1001"))
-    #     generator = torch.Generator()
-    #     generator.manual_seed(noise_seed)
+        # Separate random generator for reproducible measurement noise.
+        noise_seed = int(os.environ.get("NOISE_SEED", "1001"))
+        generator = torch.Generator()
+        generator.manual_seed(noise_seed)
 
-    #     noise = torch.randn(
-    #         Y_train.shape,
-    #         generator=generator,
-    #         dtype=Y_train.dtype,
-    #     )
+        noise = torch.randn(
+            Y_train.shape,
+            generator=generator,
+            dtype=Y_train.dtype,
+        )
 
-    #     # Noise std = noise_level × clean training-output std.
-    #     Y_train_noisy = Y_train + noise_level * Y_std * noise
+        # Noise std = noise_level × clean training-output std.
+        Y_train_noisy = Y_train + noise_level * Y_std * noise
 
-    #     # Replace only the training set.
-    #     dataset.train_set = data.TensorDataset(
-    #         X_train, Y_train_noisy
-    #     )
+        # Replace only the training set.
+        dataset.train_set = data.TensorDataset(
+            X_train, Y_train_noisy
+        )
 
-    #     print(
-    #         f"Training noise: {noise_level:.0%} of each output std; "
-    #         f"seed={noise_seed}"
-    #     )
+        print(
+            f"Training noise: {noise_level:.0%} of each output std; "
+            f"seed={noise_seed}"
+        )
 
     # loader_args = {"batch_size": args.batch_size, "shuffle": True}
     # train_loader = data.DataLoader(dataset.train_set, **loader_args)
