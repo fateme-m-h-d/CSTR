@@ -43,6 +43,25 @@ def solve_equilibrium(T, Cao, guess):
     )
     return sol, (ier == 1), mesg
 
+def build_center_points():
+    C_edges = np.linspace(Caomin, Caomax, NC_REGIONS + 1)
+    C_centers = 0.5 * (C_edges[:-1] + C_edges[1:])
+
+    center_pts = []
+
+    for nT in SEGMENT_SCENARIOS:
+        T_edges = np.linspace(Tmin, Tmax, nT + 1)
+        T_centers = 0.5 * (T_edges[:-1] + T_edges[1:])
+
+        for Tc in T_centers:
+            for Cc in C_centers:
+                center_pts.append([Tc, Cc])
+
+    return np.unique(
+        np.round(np.asarray(center_pts, dtype=float), 12),
+        axis=0,
+    )
+
 def build_fixed_points(n_total_points, seed):
     rng = np.random.default_rng(seed)
 
@@ -57,7 +76,8 @@ def build_fixed_points(n_total_points, seed):
             for Cc in C_centers:
                 center_pts.append([Tc, Cc])
 
-    center_pts = np.unique(np.round(np.array(center_pts, dtype=float), 12), axis=0)
+    # center_pts = np.unique(np.round(np.array(center_pts, dtype=float), 12), axis=0)
+    center_pts = build_center_points()
 
     anchors = np.array([
         [Tmin, Caomin],
@@ -136,6 +156,78 @@ def main():
     df = pd.DataFrame(rows).sort_values(["Temperature (T)", "Cao"]).reset_index(drop=True)
     df.to_csv(args.out_csv, index=False)
     print(f"Saved fixed dataset with {len(df)} solved points to {args.out_csv}")
+    
+    # Identify the 33 PL center points.
+    center_keys = {
+        tuple(point)
+        for point in np.round(build_center_points(), 12)
+    }
+
+    point_keys = [
+        tuple(point)
+        for point in np.round(
+            df[["Temperature (T)", "Cao"]].to_numpy(),
+            12,
+        )
+    ]
+
+    center_idx = np.asarray(
+        [
+            index
+            for index, point in enumerate(point_keys)
+            if point in center_keys
+        ],
+        dtype=int,
+    )
+
+    # Fixed 60/20/20 split.
+    n_samples = len(df)
+    n_test = int(0.2 * n_samples)
+    n_val = int(0.2 * n_samples)
+    n_train = n_samples - n_val - n_test
+
+    if len(center_idx) > n_train:
+        raise RuntimeError(
+            f"There are {len(center_idx)} centers but only "
+            f"{n_train} training positions."
+        )
+
+    # All centers are placed in training.
+    remaining_idx = np.setdiff1d(
+        np.arange(n_samples),
+        center_idx,
+        assume_unique=True,
+    )
+
+    split_rng = np.random.default_rng(42)
+    split_rng.shuffle(remaining_idx)
+
+    n_extra_train = n_train - len(center_idx)
+
+    train_idx = np.concatenate([
+        center_idx,
+        remaining_idx[:n_extra_train],
+    ])
+
+    val_start = n_extra_train
+    val_idx = remaining_idx[val_start:val_start + n_val]
+    test_idx = remaining_idx[val_start + n_val:]
+
+    split_rng.shuffle(train_idx)
+
+    np.savez(
+        "split_indices.npz",
+        train_idx=train_idx,
+        val_idx=val_idx,
+        test_idx=test_idx,
+        center_idx=center_idx,
+    )
+
+    print(
+        f"Fixed split: train={len(train_idx)}, "
+        f"validation={len(val_idx)}, test={len(test_idx)}, "
+        f"PL centers={len(center_idx)}"
+    )
 
     if fail_rows:
         fail_df = pd.DataFrame(fail_rows, columns=["T", "Cao", "message"])
