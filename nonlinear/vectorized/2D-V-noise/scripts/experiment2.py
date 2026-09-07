@@ -1,35 +1,81 @@
+import argparse
 import ast
 import os
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-BASE_DIR = Path.cwd()
+BASE_DIR = Path(__file__).resolve().parents[1]
 WORK_DIR = BASE_DIR / "_work"
 TRAINING_CSV = BASE_DIR / "training_epoch_errors.csv"
 EXPERIMENT_CSV = BASE_DIR / "experiment_epoch_errors.csv"
 
 NUM_ITERATIONS = int(os.environ.get("NUM_ITERATIONS", "50"))
-PYTHON_EXE = os.environ.get("PYTHON_EXE", "python")
+PYTHON_EXE = os.environ.get("PYTHON_EXE", sys.executable)
 SCENARIO_ID = os.environ.get("SCENARIO_ID", "default")
 EPOCHS = int(os.environ.get("EPOCHS", "1000"))
 
 SOURCE_FILES = ["main.py", "train.py", "models.py", "utils.py"]
-ARTIFACT_FILES = ["data.csv", "ABb_matrices.csv", "region_edges.npz"]
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--nT_regions", type=int, required=True)
+    parser.add_argument("--nC_regions", type=int, default=3)
+    parser.add_argument("--noise_level", type=float, default=0.05)
+    parser.add_argument("--num_iterations", type=int, default=NUM_ITERATIONS)
+    parser.add_argument("--epochs", type=int, default=EPOCHS)
+    parser.add_argument("--clean_csv", type=Path, required=True)
+    parser.add_argument("--output_dir", type=Path, required=True)
+    args = parser.parse_args()
+    if min(args.nT_regions, args.nC_regions, args.num_iterations, args.epochs) < 1:
+        parser.error("Region counts, repetitions, and epochs must be positive.")
+    if not np.isfinite(args.noise_level) or args.noise_level < 0:
+        parser.error("noise_level must be finite and nonnegative.")
+    args.clean_csv = args.clean_csv.resolve()
+    args.output_dir = args.output_dir.resolve()
+    if not args.clean_csv.is_file():
+        parser.error(f"Clean CSV not found: {args.clean_csv}")
+    if args.output_dir.exists():
+        parser.error("output_dir already exists; choose a new directory to preserve results.")
+    return args
 
 
-def prepare_work_dir():
+def prepare_work_dir(run_index, args):
     if WORK_DIR.exists():
         shutil.rmtree(WORK_DIR)
     WORK_DIR.mkdir()
     for name in SOURCE_FILES:
         shutil.copy2(BASE_DIR / "src" / name, WORK_DIR / name)
-    for name in ARTIFACT_FILES:
-        shutil.copy2(BASE_DIR / name, WORK_DIR / name)
+    shutil.copy2(args.clean_csv, WORK_DIR / "data_clean.csv")
+
+    # Prepare the split and this repeat's noisy measurements in the work folder.
+    subprocess.run(
+        [
+            PYTHON_EXE, str(BASE_DIR / "src" / "prepare_noisy_data.py"),
+            "--seed", str(1000 + run_index),
+            "--noise_level", str(args.noise_level),
+            "--nT_regions", str(args.nT_regions),
+            "--nC_regions", str(args.nC_regions),
+        ],
+        cwd=WORK_DIR, check=True,
+    )
+
+    # The unchanged linearization.py reads this repeat's data.csv.
+    subprocess.run(
+        [
+            PYTHON_EXE, str(BASE_DIR / "src" / "linearization.py"),
+            "--nT_regions", str(args.nT_regions),
+            "--nC_regions", str(args.nC_regions),
+        ],
+        cwd=WORK_DIR, check=True,
+    )
+    if run_index == 1:
+        for name in ["split_indices.npz", "region_edges.npz"]:
+            shutil.copy2(WORK_DIR / name, args.output_dir / name)
 
 
 def extract_last_epoch_error(output):
@@ -115,7 +161,7 @@ def run_main(model_name, job):
     return scores
 
 
-def run_model_experiments(model_name):
+def run_model_experiments(model_name, experiment_args):
     results = {
         "training_errors": [],
         "training_times": [],
@@ -127,11 +173,8 @@ def run_model_experiments(model_name):
     }
     for run_index in range(1, NUM_ITERATIONS + 1):
         print(f"{model_name} run {run_index}/{NUM_ITERATIONS}")
-        prepare_work_dir()
-
-        # Different noise for each repetition.
-        # The same repetition receives identical noise for both models.
-        os.environ["NOISE_SEED"] = str(1000 + run_index)
+        # Matching repetitions of the two models reproduce the same noise.
+        prepare_work_dir(run_index, experiment_args)
 
         train_result = run_main(model_name, "train")
         scores = run_main(model_name, "experiment")
@@ -148,9 +191,27 @@ def run_model_experiments(model_name):
 
 
 def main():
-    print(f"scenario={SCENARIO_ID}, repetitions={NUM_ITERATIONS}")
-    nn_results = run_model_experiments("NN")
-    kkt_results = run_model_experiments("KKThPINN")
+    global WORK_DIR, TRAINING_CSV, EXPERIMENT_CSV, NUM_ITERATIONS, EPOCHS
+
+    experiment_args = parse_arguments()
+    experiment_args.output_dir.mkdir(parents=True)
+    # Preserve an immutable reference copy for this condition.
+    clean_copy = experiment_args.output_dir / "data_clean.csv"
+    shutil.copy2(experiment_args.clean_csv, clean_copy)
+    experiment_args.clean_csv = clean_copy
+
+    WORK_DIR = experiment_args.output_dir / "_work"
+    TRAINING_CSV = experiment_args.output_dir / "training_epoch_errors.csv"
+    EXPERIMENT_CSV = experiment_args.output_dir / "experiment_epoch_errors.csv"
+    NUM_ITERATIONS = experiment_args.num_iterations
+    EPOCHS = experiment_args.epochs
+
+    print(
+        f"Regions={experiment_args.nT_regions} x {experiment_args.nC_regions}; "
+        f"noise={experiment_args.noise_level:.1%}; repetitions={NUM_ITERATIONS}"
+    )
+    nn_results = run_model_experiments("NN", experiment_args)
+    kkt_results = run_model_experiments("KKThPINN", experiment_args)
 
     pd.DataFrame({
         "Iteration": range(1, NUM_ITERATIONS + 1),

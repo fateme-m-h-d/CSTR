@@ -1,14 +1,11 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MaxAbsScaler
-from sklearn.utils import shuffle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils import data
-
-import os
 
 from models import NN, NNOPT
 
@@ -36,40 +33,6 @@ def LoadData(args):
     dataset = Data_cstr(dataset_arr)
     dataset.resplit_data(args.val_ratio)
     
-    noise_level = float(os.environ.get("NOISE_LEVEL", "0.0"))
-
-    if args.job == "train" and noise_level > 0.0:
-        # Collect CLEAN training inputs and outputs.
-        X_train = torch.stack([x for x, y in dataset.train_set])
-        Y_train = torch.stack([y for x, y in dataset.train_set])
-
-        # One standard deviation per output: Ca, Cb, Cc.
-        Y_std = torch.std(Y_train, dim=0, unbiased=False)
-
-        # Separate random generator for reproducible measurement noise.
-        noise_seed = int(os.environ.get("NOISE_SEED", "1001"))
-        generator = torch.Generator()
-        generator.manual_seed(noise_seed)
-
-        noise = torch.randn(
-            Y_train.shape,
-            generator=generator,
-            dtype=Y_train.dtype,
-        )
-
-        # Noise std = noise_level × clean training-output std.
-        Y_train_noisy = Y_train + noise_level * Y_std * noise
-
-        # Replace only the training set.
-        dataset.train_set = data.TensorDataset(
-            X_train, Y_train_noisy
-        )
-
-        print(
-            f"Training noise: {noise_level:.0%} of each output std; "
-            f"seed={noise_seed}"
-        )
-
     # loader_args = {"batch_size": args.batch_size, "shuffle": True}
     # train_loader = data.DataLoader(dataset.train_set, **loader_args)
     # val_loader = data.DataLoader(dataset.val_set, **loader_args)
@@ -153,10 +116,22 @@ def get_loss_func(args, data):
 
 
 def load_data(dataset_path):
-    dataset = np.asarray(pd.read_csv(dataset_path).values)
-    scaler = MaxAbsScaler()
-    dataset_scaled = scaler.fit_transform(dataset)
-    return dataset_scaled, scaler
+    dataset = pd.read_csv(
+        dataset_path, float_precision="round_trip"
+    ).to_numpy(dtype=float)
+    clean = pd.read_csv(
+        "data_clean.csv", float_precision="round_trip"
+    ).to_numpy(dtype=float)
+    with np.load("split_indices.npz", allow_pickle=False) as split:
+        train_idx = split["train_idx"].copy()
+    if dataset.shape != clean.shape or not np.array_equal(
+        dataset[:, :2], clean[:, :2]
+    ):
+        raise ValueError("Clean and prepared data must have the same rows and inputs.")
+    # Identical preprocessing in the 0% and 5% conditions.
+    # Fit on clean training rows; validation and test rows are excluded.
+    scaler = MaxAbsScaler().fit(clean[train_idx])
+    return scaler.transform(dataset), scaler
 
 
 def get_ScaleAndMean(scaler, x_dim, z_dim):
@@ -223,16 +198,23 @@ class Data_cstr(data.Dataset):
         return self.dataset_tensor[idx, :]
 
     def split_data(self, val_ratio, test_ratio=0.2):
+        if not np.isclose(val_ratio, 0.2) or not np.isclose(test_ratio, 0.2):
+            raise ValueError("This study uses the prepared 60/20/20 split.")
+        with np.load("split_indices.npz", allow_pickle=False) as split:
+            indices = [
+                split["train_idx"].copy(),
+                split["val_idx"].copy(),
+                split["test_idx"].copy(),
+            ]
+            center_idx = split["center_idx"].copy()
+        if not np.array_equal(
+            np.sort(np.concatenate(indices)), np.arange(len(self.X))
+        ):
+            raise ValueError("Split indices must cover the dataset once, without overlap.")
+        if not np.isin(center_idx, indices[0]).all():
+            raise ValueError("Every active PL center must belong to training.")
         samples = data.TensorDataset(self.X, self.Y)
-        samples = shuffle(samples, random_state=42)
-        n_samples = len(samples)
-        n_val = int(val_ratio * n_samples)
-        n_test = int(test_ratio * n_samples)
-        n_train = n_samples - n_val - n_test
-        train_set = data.Subset(samples, range(0, n_train))
-        val_set = data.Subset(samples, range(n_train, n_train + n_val))
-        test_set = data.Subset(samples, range(n_train + n_val, n_samples))
-        return train_set, val_set, test_set
+        return tuple(data.Subset(samples, idx.tolist()) for idx in indices)
 
     def resplit_data(self, val_ratio, test_ratio=0.2):
         self.train_set, self.val_set, self.test_set = self.split_data(
