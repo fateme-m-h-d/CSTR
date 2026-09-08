@@ -10,8 +10,8 @@ SUMMARY_PATH = BASE_DIR / "metric_summary_by_segments.csv"
 
 PLOTS = [
     ("RMSE", "RMSE", "rmse_vs_regions_1d.png", False),
-    ("Experiment_Time_sec", "Experiment time (sec)", "time_vs_regions_1d.png", False),
-    ("Prediction_Time_sec", "Prediction time (sec)", "time_vs_regions_1d.png", False),
+    ("Experiment_Time_sec", "Experiment time (sec)", "experiment_time_vs_regions_1d.png", False),
+    ("Prediction_Time_sec", "Prediction time (sec)", "prediction_time_vs_regions_1d.png", False),
     ("Original_Nonlinear_Violation", "Original nonlinear violation", "nonlinear_violation_vs_regions_1d.png", True),
 ]
 

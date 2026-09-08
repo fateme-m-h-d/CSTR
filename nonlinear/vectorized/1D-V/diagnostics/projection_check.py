@@ -7,17 +7,27 @@ device = "cpu"
 
 
 def projection_only_forward(model, X, Y):
-    masks = model.get_masks_1d(X)
+    region = model.get_region_index(X)
 
-    fixed_outputs = []
+    Bstar = model.Bstar[region]
+    Astar = model.Astar[region]
+    bstar = model.bstar[region]
 
-    for r, (fc1, fc2) in enumerate(zip(model.fc1_list, model.fc2_list)):
-        y_proj_r = fc1(Y) + fc2(X)
+    Y_proj = (
+        torch.bmm(
+            Bstar,
+            Y.unsqueeze(-1),
+        ).squeeze(-1)
+        +
+        torch.bmm(
+            Astar,
+            X.unsqueeze(-1),
+        ).squeeze(-1)
+        +
+        bstar
+    )
 
-        mask_r = masks[:, r:r+1]
-        fixed_outputs.append(y_proj_r * mask_r)
-
-    return sum(fixed_outputs)
+    return Y_proj
 
 
 def run_projection_check(args, data):
