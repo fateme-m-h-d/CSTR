@@ -19,6 +19,7 @@ SUMMARY_PATH = BASE_DIR / "metric_summary_by_segments.csv"
 EXPERIMENT_METRICS = [
     ("RMSE", "NN_Experiment_RMSE", "KKThPINN_Experiment_RMSE"),
     ("Experiment_Time_sec", "NN_Experiment_Time_sec", "KKThPINN_Experiment_Time_sec"),
+    ("Prediction_Time_sec", "NN_Prediction_Time_sec", "KKThPINN_Prediction_Time_sec"),
     ("Original_Nonlinear_Violation", "NN_Experiment_VIOL_NL", "KKThPINN_Experiment_VIOL_NL"),
 ]
 

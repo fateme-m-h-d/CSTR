@@ -15,9 +15,10 @@ PLOTS = [
     (
         "Experiment_Time_sec",
         "Experiment time (sec)",
-        "time_vs_regions_2d.png",
+        "experiment_time_vs_regions_2d.png",
         False,
     ),
+    ("Prediction_Time_sec", "Prediction time (sec)", "prediction_time_vs_regions_2d.png", False),
     (
         "Original_Nonlinear_Violation",
         "Original nonlinear violation",
