@@ -6,7 +6,7 @@ const MOI = JuMP.MOI
 function solve_cstr_conversion_optimization(;
     alpha = 0.2,
     beta = 0.2,
-    T_start = 385.0,
+    T_start = 300.0,
     CA0_start = 0.88,
 )
 
@@ -20,15 +20,15 @@ function solve_cstr_conversion_optimization(;
     Eaf = 90_000.0
 
     Ar = 1.0e11
-    Ear = 80_000.0
+    Ear = 100_000.0
 
     R = 8.314
 
-    CB0 = 2.0
-    CC0 = 0.0
-
     T_min = 280.0
     T_max = 460.0
+
+    CB0 = 2.0
+    CC0 = 0.0
 
     CA0_min = 0.8
     CA0_max = 1.2
@@ -141,12 +141,32 @@ function solve_cstr_conversion_optimization(;
     # 7. Objective
     # ============================================================
 
+    # @objective(
+    #     model,
+    #     Max,
+    #     conversion -
+    #     alpha * T_hat^2 -
+    #     beta * (CA0_hat - 0.5)^2
+    # )
+
+    # @objective(
+    #     model,
+    #     Max,
+    #     conversion
+    # )
+    
+    lambda_CA0 = 0.3
+
+    @expression(
+        model,
+        economic_objective,
+        x - lambda_CA0 * CA0
+    )
+
     @objective(
         model,
         Max,
-        conversion -
-        alpha * T_hat^2 -
-        beta * (CA0_hat - 0.5)^2
+        economic_objective
     )
 
     # ============================================================
