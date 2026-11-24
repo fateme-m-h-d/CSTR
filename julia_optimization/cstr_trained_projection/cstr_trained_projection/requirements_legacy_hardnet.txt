@@ -1,0 +1,6 @@
+# Old API pinned to the archived 1.0.1 source, not the changing branch tip.
+kkt-hardnet @ git+https://github.com/SOULS-TAMU/kkt-hardnet.git@bc9ba8908e650659436f531724386508e6cf30e0#subdirectory=kkthn
+torch>=2.2
+
+# Prevent the historical Flax dependency from pulling a newer incompatible Orbax stack.
+orbax-checkpoint==0.6.4

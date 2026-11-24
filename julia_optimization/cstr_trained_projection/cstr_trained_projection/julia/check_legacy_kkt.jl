@@ -1,0 +1,20 @@
+include("legacy_hardnet_kkt.jl")
+function main()
+    directory=abspath(get(ARGS,1,joinpath(LEGACY_ROOT,"artifacts_legacy","hardnet")))
+    backbone=get(ARGS,2,"full")
+    rows=readdlm(joinpath(directory,"parity.csv"),',',Float64;skipstart=1)
+    maxdiff,maxres=0.,0.
+    for k in axes(rows,1)
+        r=build_legacy_kkt(directory;backbone,start=Tuple(rows[k,1:2]),y_start=rows[k,6:8],nonnegative=false)
+        set_silent(r.model);fix(r.t,rows[k,1];force=true);fix(r.a,rows[k,2];force=true)
+        optimize!(r.model)
+        termination_status(r.model) in (MOI.LOCALLY_SOLVED,MOI.OPTIMAL) || error("Fixed-input solve failed at row $k")
+        maxdiff=max(maxdiff,norm(value.(r.y)-rows[k,6:8],Inf))
+        maxres=max(maxres,norm([value.(r.stationary);value.(r.g)]))
+    end
+    println("Maximum package/direct-KKT output discrepancy = ",maxdiff)
+    println("Maximum KKT L2 residual = ",maxres)
+    maxdiff<=1e-6 && maxres<=1e-7 || error("Package/KKT parity failed; investigate convergence or root selection")
+    println("PASS at all saved fixed inputs, warm-started on the trained branch; uniqueness is not established")
+end
+main()

@@ -1,0 +1,90 @@
+OLDER-PACKAGE WORKFLOW VALIDATION
+Source commit: bc9ba8908e650659436f531724386508e6cf30e0; package 1.0.1
+Python 3.12 / JAX 0.4.30 / NumPy 1.26.4 / float64. Julia 1.10.10.
+
+All 173 package solves met KKT L2 <=1e-8; .pt raw parity <=2.23e-16.
+All 173 warm-started fixed-input direct-KKT checks passed: max output discrepancy 3.312e-7.
+Plain direct KKT free optimization: full backbone PASSED; reduced and gray backbones REJECTED by forward-match checks.
+Their KKT-feasible solution belongs to a different root and must not be reported as the trained predictor optimum.
+
+--- legacy_export_recheck.log ---
+JAX/package vs .pt raw scaled-output maximum difference = 2.220446049250313e-16
+{
+  "points": 173,
+  "converged_points": 173,
+  "all_converged": true,
+  "max_package_KKT_L2": 9.981746955200092e-09,
+  "max_independent_KKT_L2": 9.98174670891612e-09,
+  "max_iterations": 42,
+  "jax_torch_raw_max_difference": 2.220446049250313e-16,
+  "package_solver_public_predict_max_difference": 0.0
+}
+
+--- legacy_kkt_check.log ---
+Backbone = full; projection = direct scaled-coordinate KKT; variables = 138
+Maximum package/direct-KKT output discrepancy = 3.3119374198697926e-7
+Maximum KKT L2 residual = 2.8422793611897766e-14
+PASS at all saved fixed inputs, warm-started on the trained branch; uniqueness is not established
+
+--- legacy_kkt_run.log ---
+Number of inequality constraint Jacobian evaluations = 52
+Number of Lagrangian Hessian evaluations             = 49
+Total seconds in IPOPT                               = 0.041
+
+EXIT: Optimal Solution Found.
+Backbone = full; projection = direct scaled-coordinate KKT; variables = 138
+FIXED-INPUT CHECK
+Termination = LOCALLY_SOLVED
+T = 391.41; Cao = 1.0111; concentrations = [0.505655822653159, 0.1115666512851664, 2.3938775260616745]
+Objective = 0.1738186156184458; full KKT L2 residual = 3.2159359137519293e-15
+Extra B balance residual = 0.8775449940211515
+Fixed-input forward discrepancy = 5.255409440962922e-10
+FREE-INPUT OPTIMIZATION; use this second solve's Ipopt time
+Termination = LOCALLY_SOLVED
+T = 357.90982311229146; Cao = 1.2000000038196403; concentrations = [0.29328473672530986, 0.6518641717560496, 2.2548510953382808]
+Objective = 0.5376922797030046; full KKT L2 residual = 2.102715456838097e-15
+Extra B balance residual = -0.46529470594471056
+Package/direct-KKT output discrepancy at selected optimum = 3.4649346070114717e-7
+
+--- legacy_kkt_reduced.log ---
+ [2] main()
+   @ Main /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:27
+ [3] top-level scope
+   @ /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:29
+in expression starting at /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:29
+Backbone = reduced; projection = direct scaled-coordinate KKT; variables = 7
+FIXED-INPUT CHECK
+Termination = LOCALLY_SOLVED
+T = 391.41; Cao = 1.0111; concentrations = [0.5056558226531591, 0.11156665128516637, 2.3938775260616745]
+Objective = 0.1738186156184458; full KKT L2 residual = 3.180285159532712e-15
+Extra B balance residual = 0.8775449940211517
+Fixed-input forward discrepancy = 5.255409440962922e-10
+FREE-INPUT OPTIMIZATION; use this second solve's Ipopt time
+Termination = LOCALLY_SOLVED
+T = 391.5286200234298; Cao = 1.2000000061972793; concentrations = [0.12338682704677399, 0.3148779658031655, 2.7617352133473396]
+Objective = 0.6880032093830994; full KKT L2 residual = 1.6068702493534405e-10
+Extra B balance residual = -0.46810432410417624
+Package/direct-KKT output discrepancy at selected optimum = 0.4760839649708351
+
+--- legacy_kkt_gray.log ---
+ [2] main()
+   @ Main /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:28
+ [3] top-level scope
+   @ /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:30
+in expression starting at /workspace/scratch/9c07de7bce8c/legacy_package_work/cstr_trained_projection/julia/run_legacy_kkt.jl:30
+Backbone = gray; projection = direct scaled-coordinate KKT; variables = 10
+FIXED-INPUT CHECK
+Termination = LOCALLY_SOLVED
+T = 391.41; Cao = 1.0111; concentrations = [0.5056558227287126, 0.11156665129105568, 2.3938775259802316]
+Objective = 0.17381861554289202; full KKT L2 residual = 2.438767421760145e-10
+Extra B balance residual = 0.8775449941663693
+Fixed-input forward discrepancy = 5.177281242607634e-10
+FREE-INPUT OPTIMIZATION; use this second solve's Ipopt time
+Termination = LOCALLY_SOLVED
+T = 391.52862002348326; Cao = 1.200000006197247; concentrations = [0.12338682704680866, 0.31487796580353905, 2.7617352133468986]
+Objective = 0.6880032093829005; full KKT L2 residual = 1.5331914579000777e-10
+Extra B balance residual = -0.4681043241044156
+Package/direct-KKT output discrepancy at selected optimum = 0.47608396497088795
+
+Additional numerical diagnosis: at the rejected reduced solution, the projection tangent curvature was -3.044 (a nonminimum stationary point), versus +0.878 for the package root at the same inputs. An experimental second-order necessary condition also allowed a different locally minimizing branch; it did not establish agreement and is NOT included in the delivered formulation.
+Predictive accuracy is a separate issue: test physical RMSE of the included checkpoint is approximately 0.355; the projection enforces only the two declared equations.

@@ -1,0 +1,16 @@
+include("common.jl")
+ear = parse(Float64,get(ARGS,1,"100000"))
+model = Model(Ipopt.Optimizer)
+@variable(model,280 <= t <= 460,start=391.41)
+@variable(model,0.8 <= a <= 1.2,start=1.0111)
+@variable(model,y[i in 1:3] >= 0,start=[0.12,0.22,2.67][i])
+cfg = (;ear)
+g,_,_ = physics(t,a,y,cfg)
+@constraint(model,[i in 1:2],g[i] == 0)
+@constraint(model,2-y[2] == 2*(a-y[1]))
+@objective(model,Max,operating_score(t,a,y[1]))
+optimize!(model)
+println("Status = ",termination_status(model))
+if primal_status(model) == MOI.FEASIBLE_POINT
+    println("T = ",value(t),"; CA0 = ",value(a),"; y = ",value.(y),"; objective = ",objective_value(model))
+end
